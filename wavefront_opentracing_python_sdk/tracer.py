@@ -6,7 +6,7 @@ from opentracing import Tracer, ReferenceType
 from opentracing.scope_managers import ThreadLocalScopeManager
 from wavefront_opentracing_python_sdk.propagation import PropagatorRegistry
 from wavefront_opentracing_python_sdk import WavefrontSpan, \
-    WavefrontSpanContext, WavefrontReference
+    WavefrontSpanContext
 
 
 class WavefrontTracer(Tracer):
@@ -30,11 +30,12 @@ class WavefrontTracer(Tracer):
         :param child_of:
         :type child_of: WavefrontSpanContext or WavefrontSpan
         :param references:
-        :type references: :obj:`list` of :class:`WavefrontReference`
+        :type references: list of opentracing.Reference
         :param tags:
         :param start_time:
         :param ignore_active_span:
         :return:
+        :rtype: WavefrontSpan
         """
         parents = []
         follows = []
@@ -48,11 +49,11 @@ class WavefrontTracer(Tracer):
                 for reference in references:
                     if reference.get_type() == ReferenceType.CHILD_OF:
                         parents.append(
-                            reference.get_span_context().get_span_id())
+                            reference.referenced_context.get_span_id())
                     elif reference.get_type() == ReferenceType.FOLLOWS_FROM:
                         follows.append(
-                            reference.get_span_context().get_span_id())
-            parent = one_reference.get_span_context()
+                            reference.referenced_context.get_span_id())
+            parent = one_reference.referenced_context
         # allow Span to be passed as reference, not just SpanContext
         if isinstance(parent, WavefrontSpan):
             parent = parent.context
