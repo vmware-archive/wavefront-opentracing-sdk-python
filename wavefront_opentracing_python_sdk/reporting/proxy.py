@@ -2,13 +2,13 @@ from wavefront_opentracing_python_sdk.reporting import Reporter
 from wavefront_python_sdk import WavefrontProxyClient
 
 
-class WavefrontProxyReporter(Reporter):
+class ProxyTracingReporter(Reporter):
     def __init__(self, proxy_host, metrics_port, distribution_port,
-                 tracing_port, source):
+                 tracing_port, source=None):
         self.sender = WavefrontProxyClient(
             proxy_host, metrics_port, distribution_port, tracing_port)
         self.source = source
-        super(WavefrontProxyReporter, self).__init__(source)
+        super(ProxyTracingReporter, self).__init__(source)
 
     def report(self, wavefront_span):
         self.send_span(self.sender, wavefront_span)

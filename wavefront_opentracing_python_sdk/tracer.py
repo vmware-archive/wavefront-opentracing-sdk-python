@@ -1,6 +1,6 @@
 # import os
 # import random
-# import time
+import time
 import uuid
 from opentracing import Tracer, ReferenceType
 from opentracing.scope_managers import ThreadLocalScopeManager
@@ -40,6 +40,7 @@ class WavefrontTracer(Tracer):
         parents = []
         follows = []
         baggage = None
+        start_time = start_time or time.time()
 
         parent = child_of
         if references:

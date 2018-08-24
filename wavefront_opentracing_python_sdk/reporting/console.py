@@ -3,7 +3,7 @@ from wavefront_python_sdk.common.utils import tracing_span_to_line_data
 
 
 class ConsoleReporter(Reporter):
-    def __init__(self, source):
+    def __init__(self, source=None):
         super(ConsoleReporter, self).__init__(source)
 
     def report(self, wavefront_span):

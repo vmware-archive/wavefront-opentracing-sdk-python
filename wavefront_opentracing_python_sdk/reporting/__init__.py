@@ -8,7 +8,7 @@ from wavefront_opentracing_python_sdk.reporting.composite \
     import CompositeReporter
 
 from wavefront_opentracing_python_sdk.reporting.proxy \
-    import WavefrontProxyReporter
+    import ProxyTracingReporter
 
 from wavefront_opentracing_python_sdk.reporting.direct \
-    import WavefrontDirectReporter
+    import DirectTracingReporter

@@ -1,6 +1,6 @@
 class Reporter(object):
 
-    def __init__(self, source):
+    def __init__(self, source=None):
         self.source = source
 
     def report(self, wavefront_span):
@@ -16,8 +16,8 @@ class Reporter(object):
         try:
             sender.send_span(
                 wavefront_span.get_operation_name(),
-                wavefront_span.get_start_time_micros() / 1000,
-                wavefront_span.get_duration_time_micros() / 1000,
+                wavefront_span.get_start_time(),
+                wavefront_span.get_duration_time() / 1000,
                 self.source,
                 wavefront_span.trace_id,
                 wavefront_span.span_id,
