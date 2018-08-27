@@ -1,6 +1,6 @@
-from wavefront_opentracing_python_sdk.propagation import Propagator
-
 from uuid import UUID
+
+from wavefront_opentracing_python_sdk.propagation import Propagator
 from wavefront_opentracing_python_sdk import WavefrontSpanContext
 
 
@@ -10,24 +10,25 @@ class TextMapPropagator(Propagator):
     _SPAN_ID = _BAGGAGE_PREFIX + "spanid"
 
     def inject(self, span_context, carrier):
-        carrier.update({self._TRACE_ID, str(span_context.get_trace_id)})
-        carrier.update({self._SPAN_ID, str(span_context.get_span_id)})
-        for key in span_context.baggage():
-            carrier.update({self._BAGGAGE_PREFIX + key,
-                            span_context.get_baggage_item(key)})
+        if not isinstance(carrier, dict):
+            raise TypeError('Carrier not a collection')
+        carrier.update({self._TRACE_ID: str(span_context.get_trace_id())})
+        carrier.update({self._SPAN_ID: str(span_context.get_span_id())})
+        for key, val in span_context.baggage.items():
+            carrier.update({self._BAGGAGE_PREFIX + key: val})
 
     def extract(self, carrier):
         trace_id = None
         span_id = None
         baggage = {}
-        for key, val in carrier:
+        for key, val in carrier.items():
             key = key.lower()
             if key == self._TRACE_ID:
                 trace_id = UUID(val)
             elif key == self._SPAN_ID:
                 span_id = UUID(val)
             elif key.startswith(self._BAGGAGE_PREFIX):
-                baggage.update({self.strip_prefix(key), val})
+                baggage.update({self.strip_prefix(key): val})
 
         if trace_id is None or span_id is None:
             return None

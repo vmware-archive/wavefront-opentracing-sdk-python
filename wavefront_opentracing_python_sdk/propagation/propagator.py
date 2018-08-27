@@ -1,8 +1,4 @@
-from wavefront_opentracing_python_sdk.propagation import Extractor
-from wavefront_opentracing_python_sdk.propagation import Injector
-
-
-class Propagator(Extractor, Injector):
+class Propagator(object):
     def extract(self, carrier):
         raise NotImplementedError
 

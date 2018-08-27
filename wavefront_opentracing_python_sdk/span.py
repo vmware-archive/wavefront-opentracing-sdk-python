@@ -1,5 +1,8 @@
-from __future__ import division
+"""
+Wavefront Span.
 
+@author: Hao Song (songhao@vmware.com)
+"""
 import threading
 import time
 from opentracing import Span
@@ -8,16 +11,22 @@ from wavefront_python_sdk.common.utils import is_blank
 
 
 class WavefrontSpan(Span):
+    """Wavefront Span."""
     def __init__(self, tracer, operation_name, context, start_time, parents,
                  follows, tags):
         """
 
-        :param tracer:
-        :param operation_name:
-        :param context:
+        :param tracer: Tracer that create this span
+        :type tracer: wavefront_opentracing_python_sdk.WavefrontTracer
+        :param operation_name: Operation Name
+        :type operation_name: str
+        :param context: Span Context
         :type context: WavefrontSpanContext
-        :param start_time:
-        :param parents:
+        :param start_time: an explicit Span start time as a unix timestamp per
+            :meth:`time.time()`
+        :type start_time: float
+        :param parents: List of UUIDs of parents span
+        :type parents: list of uuid.UUID
         :param follows:
         :param tags:
         """
@@ -101,3 +110,17 @@ class WavefrontSpan(Span):
         if not self.tags:
             return []
         return self.tags
+
+    def get_tags_as_list(self):
+        return self.get_tags()
+
+    def get_tags_as_map(self):
+        if not self.tags:
+            return {}
+        tag_map = {}
+        for key, val in self.tags:
+            if key not in tag_map:
+                tag_map[key] = [val]
+            else:
+                tag_map[key].append(val)
+        return tag_map

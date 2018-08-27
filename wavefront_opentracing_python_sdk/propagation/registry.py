@@ -12,4 +12,4 @@ class PropagatorRegistry(object):
         return self.propagators.get(format)
 
     def register(self, format, propagator):
-        self.propagators.update({format, propagator})
+        self.propagators.update({format: propagator})

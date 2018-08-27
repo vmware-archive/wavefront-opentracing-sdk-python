@@ -9,8 +9,8 @@ class ConsoleReporter(Reporter):
     def report(self, wavefront_span):
         line_data = tracing_span_to_line_data(
             wavefront_span.get_operation_name(),
-            wavefront_span.get_start_time_micros() / 1000,
-            wavefront_span.get_duration_time_micros() / 1000,
+            wavefront_span.get_start_time(),
+            wavefront_span.get_duration_time(),
             self.source,
             wavefront_span.trace_id,
             wavefront_span.span_id,

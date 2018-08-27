@@ -12,3 +12,6 @@ from wavefront_opentracing_python_sdk.reporting.proxy \
 
 from wavefront_opentracing_python_sdk.reporting.direct \
     import DirectTracingReporter
+
+__all__ = ['Reporter', 'ConsoleReporter', 'CompositeReporter',
+           'ProxyTracingReporter', 'DirectTracingReporter']
