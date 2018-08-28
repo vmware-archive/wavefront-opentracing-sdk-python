@@ -23,8 +23,7 @@ setup(
     version=VERSION,
     description="Wavefront Opentracing Python SDK",
     author_email="songhao@vmware.com",
-    url="https://github.com/wavefrontHQ/wavefront-opentracing-python-sdk"
-        "/tree/master/wavefront-opentracing-python-sdk",
+    url="https://github.com/wavefrontHQ/wavefront-opentracing-python-sdk",
     keywords=["Wavefront SDK", "Wavefront", "OpenTracing"],
     install_requires=REQUIRES,
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),

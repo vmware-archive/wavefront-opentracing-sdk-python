@@ -1,7 +1,7 @@
 """
 Wavefront Tracer.
 
-@author Hao Song (songhao@vmware.com)
+@author: Hao Song (songhao@vmware.com)
 """
 
 import time

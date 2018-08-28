@@ -1,32 +1,41 @@
+"""
+Abstract Class of Reporter.
+
+@author: Hao Song (songhao@vmware.com)
+"""
+
+
+# pylint: disable=useless-object-inheritance
 class Reporter(object):
+    """Tracing span data reporter."""
 
     def __init__(self, source=None):
+        """
+        Construct reporter.
+
+        :param source: Source of the reporter
+        :type source: str
+        """
         self.source = source
 
     def report(self, wavefront_span):
+        """
+        Report tracing span.
+
+        :param wavefront_span: Wavefront span to be reported
+        :type wavefront_span: wavefront_opentracing_python_sdk.WavefrontSpan
+        """
         raise NotImplementedError
 
     def get_failure_count(self):
+        """
+        Get failure count of the reporter.
+
+        :return: Failure count
+        :rtype: int
+        """
         raise NotImplementedError
 
     def close(self):
+        """Close the reporter."""
         raise NotImplementedError
-
-    def send_span(self, sender, wavefront_span):
-        try:
-            sender.send_span(
-                wavefront_span.get_operation_name(),
-                wavefront_span.get_start_time(),
-                wavefront_span.get_duration_time() / 1000,
-                self.source,
-                wavefront_span.trace_id,
-                wavefront_span.span_id,
-                list(map(lambda p: p.get_span_context().get_span_id(),
-                         wavefront_span.get_parents())),
-                list(map(lambda f: f.get_span_context().get_span_id(),
-                         wavefront_span.get_follows())),
-                wavefront_span.get_tags(),
-                span_logs=None)
-        except (AttributeError, TypeError) as error:
-            print("Invalid Sender, no valid send_span()")
-            raise error

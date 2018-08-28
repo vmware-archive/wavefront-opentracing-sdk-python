@@ -1,3 +1,9 @@
+"""
+Propagator Module.
+
+@author: Hao Song (songhao@vmware.com)
+"""
+
 from wavefront_opentracing_python_sdk.propagation.propagator import Propagator
 from wavefront_opentracing_python_sdk.propagation.textmap \
     import TextMapPropagator

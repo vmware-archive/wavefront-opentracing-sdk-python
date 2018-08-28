@@ -1,32 +1,52 @@
+"""
+Console Reporter.
+
+@author: Hao Song (songhao@vmware.com)
+"""
+from __future__ import print_function
 from wavefront_opentracing_python_sdk.reporting import Reporter
 from wavefront_python_sdk.common.utils import tracing_span_to_line_data
 
 
 class ConsoleReporter(Reporter):
+    """Console Reporter.
+
+    Used for print span data to console.
+    """
+
     def __init__(self, source=None):
+        """
+        Construct console reporter.
+
+        :param source: Source of the reporter
+        :type source: str
+        """
         super(ConsoleReporter, self).__init__(source)
 
     def report(self, wavefront_span):
+        """
+        Print span data to console.
+
+        :param wavefront_span: Wavefront span to be reported
+        """
         line_data = tracing_span_to_line_data(
             wavefront_span.get_operation_name(),
-            wavefront_span.get_start_time(),
-            wavefront_span.get_duration_time(),
+            int(wavefront_span.get_start_time() * 1000),
+            int(wavefront_span.get_duration_time() * 1000),
             self.source,
             wavefront_span.trace_id,
             wavefront_span.span_id,
-            list(map(lambda p: p.get_span_context().get_span_id(),
-                     wavefront_span.get_parents())),
-            list(map(lambda f: f.get_span_context().get_span_id(),
-                     wavefront_span.get_follows())),
+            wavefront_span.get_parents(),
+            wavefront_span.get_follows(),
             wavefront_span.get_tags(),
             span_logs=None,
             default_source="unknown")
         print(line_data)
 
     def get_failure_count(self):
-        # No-op
+        """No-op."""
         return 0
 
     def close(self):
-        # No-op
+        """No-op."""
         return
