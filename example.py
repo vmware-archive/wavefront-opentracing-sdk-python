@@ -75,6 +75,10 @@ if __name__ == "__main__":
     time.sleep(2)
     span4.finish()
 
+    span5 = tracer.start_span(operation_name="span5")
+    time.sleep(1)
+    span5.finish()
+
     time.sleep(1)
 
     # Close the scope

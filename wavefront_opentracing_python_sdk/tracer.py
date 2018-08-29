@@ -6,7 +6,8 @@ Wavefront Tracer.
 
 import time
 import uuid
-from opentracing import Tracer, ReferenceType, UnsupportedFormatException
+from opentracing import Tracer, Reference, ReferenceType, \
+    UnsupportedFormatException
 from opentracing.scope_managers import ThreadLocalScopeManager
 from wavefront_opentracing_python_sdk.propagation import PropagatorRegistry
 from wavefront_opentracing_python_sdk import WavefrontSpan, \
@@ -70,26 +71,37 @@ class WavefrontTracer(Tracer):
         tags.extend(self._tags)
         start_time = start_time or time.time()
 
-        parent = child_of
-        if parent is None and references:
-            one_reference = references
-            if isinstance(references, list):
-                one_reference = references[0]
-                for reference in references:
-                    if reference.get_type() == ReferenceType.CHILD_OF:
-                        parents.append(
-                            reference.referenced_context.get_span_id())
-                    elif reference.get_type() == ReferenceType.FOLLOWS_FROM:
-                        follows.append(
-                            reference.referenced_context.get_span_id())
-            parent = one_reference.referenced_context
-        # allow Span to be passed as reference, not just SpanContext
-        if isinstance(parent, WavefrontSpan):
-            parent = parent.context
+        parent = None
+        if child_of is not None:
+            parent = child_of
+            # allow both Span and SpanContext to be passed as child_of
+            if isinstance(parent, WavefrontSpan):
+                parent = child_of.context
+            parents.append(parent.get_span_id())
+        elif parent is None and references:
+            if not isinstance(references, list):
+                references = [references]
+            for reference in references:
+                if isinstance(reference, Reference):
+                    reference_ctx = reference.referenced_context
+                    # allow both Span and SpanContext to be passed as reference
+                    if isinstance(reference_ctx, WavefrontSpan):
+                        reference_ctx = reference_ctx.context
+                    if parent is None:
+                        parent = reference_ctx
+                    if reference.type == ReferenceType.CHILD_OF:
+                        parents.append(reference_ctx.get_span_id())
+                    elif reference.type == ReferenceType.FOLLOWS_FROM:
+                        follows.append(reference_ctx.get_span_id())
 
-        if ignore_active_span or parent is None or not parent.has_trace:
-            trace_id = uuid.uuid1()
-            span_id = trace_id
+        if parent is None or not parent.has_trace:
+            if not ignore_active_span and self.active_span is not None:
+                parents.append(self.active_span.span_id)
+                trace_id = self.active_span.trace_id
+                span_id = uuid.uuid1()
+            else:
+                trace_id = uuid.uuid1()
+                span_id = trace_id
             if parent and parent.baggage:
                 baggage = dict(parent.baggage)
         else:

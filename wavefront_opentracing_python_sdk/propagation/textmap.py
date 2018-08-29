@@ -10,7 +10,7 @@ from wavefront_opentracing_python_sdk import WavefrontSpanContext
 
 
 class TextMapPropagator(Propagator):
-    """TextMap Propagator."""
+    """Propagate contexts within TextMaps."""
 
     _BAGGAGE_PREFIX = "wf-ot-"
     _TRACE_ID = _BAGGAGE_PREFIX + "traceid"
