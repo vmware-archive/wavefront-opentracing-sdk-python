@@ -52,6 +52,7 @@ class TestTracer(unittest.TestCase):
         self.assertTrue("bar2" in span.get_tags_as_map().get("foo2"))
         self.assertTrue("bar3" in span.get_tags_as_map().get("foo3"))
         span.finish()
+        tracer.close()
 
     def test_global_multi_valued_tags(self):
         """Test Global Multi-valued Tags."""
@@ -66,6 +67,7 @@ class TestTracer(unittest.TestCase):
         self.assertTrue("val1" in span.get_tags_as_map().get("key1"))
         self.assertTrue("val2" in span.get_tags_as_map().get("key1"))
         span.finish()
+        tracer.close()
 
 
 if __name__ == '__main__':
