@@ -5,11 +5,11 @@ TextMap Propagator.
 """
 from uuid import UUID
 
-from wavefront_opentracing_python_sdk.propagation import Propagator
+from wavefront_opentracing_python_sdk.propagation import propagator
 from wavefront_opentracing_python_sdk import WavefrontSpanContext
 
 
-class TextMapPropagator(Propagator):
+class TextMapPropagator(propagator.Propagator):
     """Propagate contexts within TextMaps."""
 
     _BAGGAGE_PREFIX = "wf-ot-"

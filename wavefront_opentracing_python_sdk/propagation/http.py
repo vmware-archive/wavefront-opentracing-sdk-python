@@ -3,10 +3,10 @@ HTTP Propagator.
 
 @author: Hao Song (songhao@vmware.com)
 """
-from wavefront_opentracing_python_sdk.propagation import TextMapPropagator
+from wavefront_opentracing_python_sdk.propagation import textmap
 
 
-class HTTPPropagator(TextMapPropagator):
+class HTTPPropagator(textmap.TextMapPropagator):
     """HTTP Propagator."""
 
     pass

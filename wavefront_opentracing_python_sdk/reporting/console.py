@@ -4,24 +4,15 @@ Console Reporter.
 @author: Hao Song (songhao@vmware.com)
 """
 from __future__ import print_function
-from wavefront_opentracing_python_sdk.reporting import Reporter
+from wavefront_opentracing_python_sdk.reporting import reporter
 from wavefront_python_sdk.common.utils import tracing_span_to_line_data
 
 
-class ConsoleReporter(Reporter):
+class ConsoleReporter(reporter.Reporter):
     """Console Reporter.
 
     Used for print span data to console.
     """
-
-    def __init__(self, source=None):
-        """
-        Construct console reporter.
-
-        :param source: Source of the reporter
-        :type source: str
-        """
-        super(ConsoleReporter, self).__init__(source)
 
     def report(self, wavefront_span):
         """

@@ -3,11 +3,11 @@ Wavefront Span Reporter.
 
 @author: Hao Song (songhao@vmware.com)
 """
-from __future__ import print_function
-from wavefront_opentracing_python_sdk.reporting import Reporter
+import logging
+from wavefront_opentracing_python_sdk.reporting import reporter
 
 
-class WavefrontSpanReporter(Reporter):
+class WavefrontSpanReporter(reporter.Reporter):
     """Wavefront Span Reporter."""
 
     def __init__(self, client, source=None):
@@ -41,7 +41,7 @@ class WavefrontSpanReporter(Reporter):
                 wavefront_span.get_tags(),
                 span_logs=None)
         except (AttributeError, TypeError) as error:
-            print("Invalid Sender, no valid send_span function.")
+            logging.error("Invalid Sender, no valid send_span function.")
             raise error
 
     def get_failure_count(self):

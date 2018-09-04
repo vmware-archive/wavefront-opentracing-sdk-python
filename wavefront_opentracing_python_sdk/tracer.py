@@ -9,7 +9,7 @@ import uuid
 from opentracing import Tracer, Reference, ReferenceType, \
     UnsupportedFormatException
 from opentracing.scope_managers import ThreadLocalScopeManager
-from wavefront_opentracing_python_sdk.propagation import PropagatorRegistry
+from wavefront_opentracing_python_sdk.propagation import registry
 from wavefront_opentracing_python_sdk import WavefrontSpan, \
     WavefrontSpanContext
 
@@ -29,10 +29,10 @@ class WavefrontTracer(Tracer):
         super(WavefrontTracer, self).__init__(ThreadLocalScopeManager())
         self._reporter = reporter
         self._tags = tags or []
-        self.registry = PropagatorRegistry()
+        self.registry = registry.PropagatorRegistry()
         # self.random = random.Random(time.time() * (os.getpid() or 1))
 
-    # pylint: disable=too-many-arguments,too-many-locals
+    # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
     def start_span(self,
                    operation_name=None,
                    child_of=None,
@@ -78,7 +78,9 @@ class WavefrontTracer(Tracer):
             if isinstance(parent, WavefrontSpan):
                 parent = child_of.context
             parents.append(parent.get_span_id())
+        # references filed will be omitted if child_of field is not None
         elif parent is None and references:
+            # allow both single Reference and list of Reference to be passed
             if not isinstance(references, list):
                 references = [references]
             for reference in references:
@@ -149,7 +151,7 @@ class WavefrontTracer(Tracer):
                             start_time, ignore_active_span), finish_on_close)
 
     # pylint: disable=redefined-builtin
-    def inject(self, span_context, format, carrier):
+    def inject(self, span_context, fmt, carrier):
         """Inject `span_context` into `carrier`.
 
         The type of `carrier` is determined by `format`. See the
@@ -161,15 +163,15 @@ class WavefrontTracer(Tracer):
         :param span_context: the :class:`SpanContext` instance to inject
         :type span_context: SpanContext
 
-        :param format: a python object instance that represents a given
+        :param fmt: a python object instance that represents a given
             carrier format. `format` may be of any type, and `format` equality
             is defined by python ``==`` equality.
-        :type format: Format
+        :type fmt: Format
         :param carrier: the format-specific carrier object to inject into
         """
-        propagator = self.registry.get(format)
+        propagator = self.registry.get(fmt)
         if not propagator:
-            raise UnsupportedFormatException("Invalid format " + str(format))
+            raise UnsupportedFormatException("Invalid format " + str(fmt))
         if isinstance(span_context, WavefrontSpan):
             # be flexible and allow Span as argument, not only SpanContext
             span_context = span_context.context
@@ -179,22 +181,22 @@ class WavefrontTracer(Tracer):
         propagator.inject(span_context, carrier)
 
     # pylint: disable=redefined-builtin
-    def extract(self, format, carrier):
+    def extract(self, fmt, carrier):
         """Return a :class:`SpanContext` instance extracted from a `carrier`.
 
-        :param format: a python object instance that represents a given
+        :param fmt: a python object instance that represents a given
             carrier format. `format` may be of any type, and `format` equality
             is defined by python ``==`` equality.
-        :type format: opentracing.Format
+        :type fmt: opentracing.Format
         :param carrier: the format-specific carrier object to extract from
         :type carrier: dict
         :return: a :class:`SpanContext` extracted from `carrier` or ``None`` if
             no such :class:`SpanContext` could be found.
         :rtype: SpanContext
         """
-        propagator = self.registry.get(format)
+        propagator = self.registry.get(fmt)
         if not propagator:
-            raise UnsupportedFormatException("Invalid format " + str(format))
+            raise UnsupportedFormatException("Invalid format " + str(fmt))
         return propagator.extract(carrier)
 
     def close(self):

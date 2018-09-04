@@ -89,5 +89,5 @@ class WavefrontSpanContext(SpanContext):
         :return: span context to string
         :rtype: str
         """
-        return 'WavefrontSpanContext{traceId=' + str(self.trace_id) + \
-               ', spanId=' + str(self.span_id) + '}'
+        return 'WavefrontSpanContext{{traceId={}, spanId={}}}'.format(
+            self.trace_id, self.span_id)
