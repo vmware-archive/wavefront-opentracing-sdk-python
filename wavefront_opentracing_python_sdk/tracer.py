@@ -151,7 +151,7 @@ class WavefrontTracer(Tracer):
                             start_time, ignore_active_span), finish_on_close)
 
     # pylint: disable=redefined-builtin
-    def inject(self, span_context, fmt, carrier):
+    def inject(self, span_context, format, carrier):
         """Inject `span_context` into `carrier`.
 
         The type of `carrier` is determined by `format`. See the
@@ -163,15 +163,15 @@ class WavefrontTracer(Tracer):
         :param span_context: the :class:`SpanContext` instance to inject
         :type span_context: SpanContext
 
-        :param fmt: a python object instance that represents a given
+        :param format: a python object instance that represents a given
             carrier format. `format` may be of any type, and `format` equality
             is defined by python ``==`` equality.
-        :type fmt: Format
+        :type format: Format
         :param carrier: the format-specific carrier object to inject into
         """
-        propagator = self.registry.get(fmt)
+        propagator = self.registry.get(format)
         if not propagator:
-            raise UnsupportedFormatException("Invalid format " + str(fmt))
+            raise UnsupportedFormatException("Invalid format " + str(format))
         if isinstance(span_context, WavefrontSpan):
             # be flexible and allow Span as argument, not only SpanContext
             span_context = span_context.context
@@ -181,22 +181,22 @@ class WavefrontTracer(Tracer):
         propagator.inject(span_context, carrier)
 
     # pylint: disable=redefined-builtin
-    def extract(self, fmt, carrier):
+    def extract(self, format, carrier):
         """Return a :class:`SpanContext` instance extracted from a `carrier`.
 
-        :param fmt: a python object instance that represents a given
+        :param format: a python object instance that represents a given
             carrier format. `format` may be of any type, and `format` equality
             is defined by python ``==`` equality.
-        :type fmt: opentracing.Format
+        :type format: opentracing.Format
         :param carrier: the format-specific carrier object to extract from
         :type carrier: dict
         :return: a :class:`SpanContext` extracted from `carrier` or ``None`` if
             no such :class:`SpanContext` could be found.
         :rtype: SpanContext
         """
-        propagator = self.registry.get(fmt)
+        propagator = self.registry.get(format)
         if not propagator:
-            raise UnsupportedFormatException("Invalid format " + str(fmt))
+            raise UnsupportedFormatException("Invalid format " + str(format))
         return propagator.extract(carrier)
 
     def close(self):
