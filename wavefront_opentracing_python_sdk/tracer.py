@@ -6,15 +6,14 @@ Wavefront Tracer.
 
 import time
 import uuid
-from opentracing import Tracer, Reference, ReferenceType, \
-    UnsupportedFormatException
+import opentracing
 from opentracing.scope_managers import ThreadLocalScopeManager
 from wavefront_opentracing_python_sdk.propagation import registry
-from wavefront_opentracing_python_sdk import WavefrontSpan, \
-    WavefrontSpanContext
+from wavefront_opentracing_python_sdk.span import WavefrontSpan
+from wavefront_opentracing_python_sdk.span_context import WavefrontSpanContext
 
 
-class WavefrontTracer(Tracer):
+class WavefrontTracer(opentracing.Tracer):
     """Wavefront Tracer."""
 
     def __init__(self, reporter, tags=None):
@@ -83,16 +82,17 @@ class WavefrontTracer(Tracer):
             if not isinstance(references, list):
                 references = [references]
             for reference in references:
-                if isinstance(reference, Reference):
+                if isinstance(reference, opentracing.Reference):
                     reference_ctx = reference.referenced_context
                     # allow both Span and SpanContext to be passed as reference
                     if isinstance(reference_ctx, WavefrontSpan):
                         reference_ctx = reference_ctx.context
                     if parent is None:
                         parent = reference_ctx
-                    if reference.type == ReferenceType.CHILD_OF:
+                    if reference.type == opentracing.ReferenceType.CHILD_OF:
                         parents.append(reference_ctx.get_span_id())
-                    elif reference.type == ReferenceType.FOLLOWS_FROM:
+                    elif reference.type == \
+                            opentracing.ReferenceType.FOLLOWS_FROM:
                         follows.append(reference_ctx.get_span_id())
 
         if parent is None or not parent.has_trace:
@@ -170,7 +170,8 @@ class WavefrontTracer(Tracer):
         """
         propagator = self.registry.get(format)
         if not propagator:
-            raise UnsupportedFormatException("Invalid format " + str(format))
+            raise opentracing.UnsupportedFormatException(
+                "Invalid format " + str(format))
         if isinstance(span_context, WavefrontSpan):
             # be flexible and allow Span as argument, not only SpanContext
             span_context = span_context.context
@@ -195,7 +196,8 @@ class WavefrontTracer(Tracer):
         """
         propagator = self.registry.get(format)
         if not propagator:
-            raise UnsupportedFormatException("Invalid format " + str(format))
+            raise opentracing.UnsupportedFormatException(
+                "Invalid format " + str(format))
         return propagator.extract(carrier)
 
     def close(self):
