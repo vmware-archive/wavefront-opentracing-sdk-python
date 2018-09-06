@@ -25,7 +25,7 @@ Before exiting your application, don't forget to close the tracer which will flu
 tracer.close()
 ```
 
-When you instantiate the tracer, the builder pattern can be used to customize the reporter as shown below.
+When you instantiate the tracer, you should pass a customized reporter as shown below.
 
 ### WavefrontSpanReporter
 Before we instantiate the `WavefrontSpanReporter`, we need to instantiate a Wavefront Client 
@@ -33,7 +33,7 @@ Before we instantiate the `WavefrontSpanReporter`, we need to instantiate a Wave
 Refer to this page (https://github.com/wavefrontHQ/wavefront-python-sdk/blob/master/README.md)
 to instantiate `WavefrontProxyClient` or `WavefrontDirectClient`.
 
-### Option 1 - Proxy reporter using Wavefront Proxy Client
+#### Option 1 - Proxy reporter using Wavefront Proxy Client
 ```python
 from wavefront_python_sdk import WavefrontProxyClient
 from wavefront_opentracing_python_sdk.reporting import WavefrontSpanReporter
@@ -58,7 +58,7 @@ tracer = WavefrontTracer(reporter=proxy_reporter)
 total_failures = proxy_reporter.get_failure_count()
 ```
 
-### Option 2 - Direct reporter using Wavefront Direct Ingestion Client
+#### Option 2 - Direct reporter using Wavefront Direct Ingestion Client
 ```python
 from wavefront_python_sdk import WavefrontDirectClient
 from wavefront_opentracing_python_sdk.reporting import WavefrontSpanReporter
@@ -81,7 +81,7 @@ tracer = WavefrontTracer(reporter=direct_reporter)
 total_failures = direct_reporter.get_failure_count()
 ```
 
-### Composite reporter (chaining multiple reporters)
+#### Composite reporter (chaining multiple reporters)
 ```PYTHON
 from wavefront_opentracing_python_sdk.reporting import ConsoleReporter, CompositeReporter
 

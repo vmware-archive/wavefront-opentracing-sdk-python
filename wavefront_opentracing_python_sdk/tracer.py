@@ -30,7 +30,6 @@ class WavefrontTracer(Tracer):
         self._reporter = reporter
         self._tags = tags or []
         self.registry = registry.PropagatorRegistry()
-        # self.random = random.Random(time.time() * (os.getpid() or 1))
 
     # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
     def start_span(self,
