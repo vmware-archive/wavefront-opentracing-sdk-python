@@ -8,6 +8,7 @@ python:
 
 install:
   - pip install opentracing
+  - pip install git+https://github.com/wavefrontHQ/wavefront-python-sdk.git
 
 script:
   - python -m unittest discover
