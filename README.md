@@ -1,4 +1,4 @@
-# wavefront-opentracing-python-sdk [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-python-sdk.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-python-sdk)
+# wavefront-opentracing-sdk-python [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-python.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-python)
 
 This Python library provides open tracing support for Wavefront.
 
