@@ -8,7 +8,8 @@ python:
 
 install:
   - pip install opentracing
-  - pip install git+https://github.com/wavefrontHQ/wavefront-python-sdk.git
+  # TODO: Change to `pip install wavefront-sdk-python` once it's released
+  - pip install git+https://github.com/wavefrontHQ/wavefront-sdk-python.git@hao/application_tags
 
 script:
   - python -m unittest discover
