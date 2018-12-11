@@ -7,7 +7,7 @@ This Python library provides open tracing support for Wavefront.
 Python 2.7+ and Python 3.x are supported.
 
 ```bash
-pip install wavefront_opentracing_python_sdk 
+pip install wavefront-opentracing-sdk-python 
 ```
 ## Usage
 
@@ -35,9 +35,9 @@ to instantiate `WavefrontProxyClient` or `WavefrontDirectClient`.
 
 #### Option 1 - Proxy reporter using Wavefront Proxy Client
 ```python
-from wavefront_python_sdk import WavefrontProxyClient
-from wavefront_opentracing_python_sdk.reporting import WavefrontSpanReporter
-from wavefront_opentracing_python_sdk import WavefrontTracer
+from wavefront_sdk import WavefrontProxyClient
+from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
+from wavefront_opentracing_sdk import WavefrontTracer
 
 # Report opentracing spans to Wavefront via a Wavefront Proxy.
 proxy_client = WavefrontProxyClient(
@@ -60,9 +60,9 @@ total_failures = proxy_reporter.get_failure_count()
 
 #### Option 2 - Direct reporter using Wavefront Direct Ingestion Client
 ```python
-from wavefront_python_sdk import WavefrontDirectClient
-from wavefront_opentracing_python_sdk.reporting import WavefrontSpanReporter
-from wavefront_opentracing_python_sdk import WavefrontTracer
+from wavefront_sdk import WavefrontDirectClient
+from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
+from wavefront_opentracing_sdk import WavefrontTracer
 
 # Report opentracing spans to Wavefront via a Wavefront Direct Ingestion.
 direct_client = WavefrontDirectClient(
@@ -83,13 +83,13 @@ total_failures = direct_reporter.get_failure_count()
 
 #### Composite reporter (chaining multiple reporters)
 ```PYTHON
-from wavefront_opentracing_python_sdk.reporting import ConsoleReporter, CompositeReporter
+from wavefront_opentracing_sdk.reporting import ConsoleReporter, CompositeReporter
 
 # Creates a console reporter that reports span to stdout (useful for debugging).
-console_reporter = ConsoleReporter(source="wavefront-tracing-example");
+console_reporter = ConsoleReporter(source="wavefront-tracing-example")
 
 # Instantiate a composite reporter composed of console and direct reporter.
-composite_reporter = CompositeReporter(direct_reporter, console_reporter);
+composite_reporter = CompositeReporter(direct_reporter, console_reporter)
 
 # Construct Wavefront opentracing Tracer composed of console and direct reporter.
 tracer = WavefrontTracer(reporter=composite_reporter) 

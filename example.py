@@ -5,9 +5,9 @@ Examples of Wavefront Opentracing Python SDK.
 """
 import time
 from opentracing import child_of, follows_from
-from wavefront_python_sdk import WavefrontDirectClient, WavefrontProxyClient
-from wavefront_opentracing_python_sdk import WavefrontTracer
-from wavefront_opentracing_python_sdk.reporting import CompositeReporter, \
+from wavefront_sdk import WavefrontDirectClient, WavefrontProxyClient
+from wavefront_opentracing_sdk import WavefrontTracer
+from wavefront_opentracing_sdk.reporting import CompositeReporter, \
     WavefrontSpanReporter, ConsoleReporter
 
 # pylint: disable=invalid-name

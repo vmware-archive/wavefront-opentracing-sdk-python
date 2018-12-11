@@ -5,8 +5,8 @@ Unit Tests for Wavefront Tracer.
 """
 import unittest
 from opentracing.propagation import Format
-from wavefront_opentracing_python_sdk import WavefrontTracer
-from wavefront_opentracing_python_sdk.reporting import ConsoleReporter
+from wavefront_opentracing_sdk import WavefrontTracer
+from wavefront_opentracing_sdk.reporting import ConsoleReporter
 
 
 class TestTracer(unittest.TestCase):

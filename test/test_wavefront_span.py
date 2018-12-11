@@ -4,8 +4,8 @@ Unit Tests for Wavefront Span.
 @author: Hao Song (songhao@vmware.com)
 """
 import unittest
-from wavefront_opentracing_python_sdk import WavefrontTracer
-from wavefront_opentracing_python_sdk.reporting import ConsoleReporter
+from wavefront_opentracing_sdk import WavefrontTracer
+from wavefront_opentracing_sdk.reporting import ConsoleReporter
 
 
 class TestSpan(unittest.TestCase):

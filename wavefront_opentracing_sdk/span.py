@@ -6,7 +6,7 @@ Wavefront Span.
 import threading
 import time
 from opentracing import Span
-from wavefront_python_sdk.common.utils import is_blank
+from wavefront_sdk.common.utils import is_blank
 
 
 # pylint: disable=too-many-instance-attributes

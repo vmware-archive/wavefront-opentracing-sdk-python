@@ -4,8 +4,8 @@ Console Reporter.
 @author: Hao Song (songhao@vmware.com)
 """
 from __future__ import print_function
-from wavefront_python_sdk.common.utils import tracing_span_to_line_data
-from wavefront_opentracing_python_sdk.reporting import reporter
+from wavefront_sdk.common.utils import tracing_span_to_line_data
+from wavefront_opentracing_sdk.reporting import reporter
 
 
 class ConsoleReporter(reporter.Reporter):
