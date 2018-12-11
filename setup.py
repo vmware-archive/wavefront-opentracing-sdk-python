@@ -16,7 +16,7 @@ VERSION = "1.0.0"
 # prerequisite: setuptools
 # http://pypi.python.org/pypi/setuptools
 
-REQUIRES = ['opentracing>=2', 'wavefront-sdk-python']
+REQUIRES = ['opentracing>=2', 'wavefront-sdk-python>=1']
 
 setup(
     name=NAME,

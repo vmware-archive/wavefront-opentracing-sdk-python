@@ -8,7 +8,6 @@ import time
 import uuid
 import opentracing
 from opentracing.scope_managers import ThreadLocalScopeManager
-from wavefront_sdk.common import ApplicationTags
 from wavefront_opentracing_sdk.propagation import registry
 from wavefront_opentracing_sdk.span import WavefrontSpan
 from wavefront_opentracing_sdk.span_context import WavefrontSpanContext
@@ -17,7 +16,7 @@ from wavefront_opentracing_sdk.span_context import WavefrontSpanContext
 class WavefrontTracer(opentracing.Tracer):
     """Wavefront Tracer."""
 
-    def __init__(self, reporter, application_tags, tags=None):
+    def __init__(self, reporter, application_tags, global_tags=None):
         """
         Construct Wavefront Tracer.
 
@@ -25,12 +24,12 @@ class WavefrontTracer(opentracing.Tracer):
         :type reporter: :class:`Reporter`
         :param application_tags: Application Tags
         :type application_tags: :class:`ApplicationTags`
-        :param tags: Tags
-        :type tags: list of pair
+        :param global_tags: Global tags for the tracer
+        :type global_tags: list of pair
         """
         super(WavefrontTracer, self).__init__(ThreadLocalScopeManager())
         self._reporter = reporter
-        self._tags = tags or []
+        self._tags = global_tags or []
         self._tags.extend(application_tags.get_as_list())
         self.registry = registry.PropagatorRegistry()
 

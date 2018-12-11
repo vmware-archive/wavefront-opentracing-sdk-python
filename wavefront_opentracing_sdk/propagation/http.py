@@ -8,5 +8,3 @@ from wavefront_opentracing_sdk.propagation import textmap
 
 class HTTPPropagator(textmap.TextMapPropagator):
     """HTTP Propagator."""
-
-    pass
