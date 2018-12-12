@@ -11,12 +11,30 @@ pip install wavefront-opentracing-sdk-python
 ```
 ## Usage
 
+### Application Tags
+
+Application tags determine the metadata (span tags) that are included with every span reported to Wavefront. These tags enable you to filter and query trace data in Wavefront. Instantiating ApplicationTags as follows:
+
+```python
+from wavefront_sdk.common import ApplicationTags
+
+application_tags = ApplicationTags(application="<APPLICATION>",
+                                   service="<SERVICE>",
+                                   cluster="<CLUSTER>",
+                                   shard="<SHARD>",
+                                   custom_tags=[("custom_key", "custom_val")])
+```
+
 ### Tracer
+
 OpenTracing Tracer is a simple, thin interface for Span creation and propagation across arbitrary transports.
 
 #### How to instantiate a Wavefront tracer?
+
+1. Set Up Application Tags
+
 ```python
-tracer = WavefrontTracer(reporter=reporter)
+tracer = WavefrontTracer(reporter=reporter, application_tags=application_tags)
 ```
 
 #### Close the tracer
@@ -52,7 +70,8 @@ proxy_reporter = WavefrontSpanReporter(
 )
 
 # Construct Wavefront opentracing Tracer using proxy reporter.
-tracer = WavefrontTracer(reporter=proxy_reporter) 
+tracer = WavefrontTracer(reporter=proxy_reporter,
+                         application_tags=application_tags) 
 
 # To get failures observed while reporting.
 total_failures = proxy_reporter.get_failure_count()
@@ -75,7 +94,8 @@ direct_reporter = WavefrontSpanReporter(
 )
 
 # Construct Wavefront opentracing Tracer using direct reporter.
-tracer = WavefrontTracer(reporter=direct_reporter) 
+tracer = WavefrontTracer(reporter=direct_reporter,
+                         application_tags=application_tags) 
 
 # To get failures observed while reporting.
 total_failures = direct_reporter.get_failure_count()
@@ -92,5 +112,6 @@ console_reporter = ConsoleReporter(source="wavefront-tracing-example")
 composite_reporter = CompositeReporter(direct_reporter, console_reporter)
 
 # Construct Wavefront opentracing Tracer composed of console and direct reporter.
-tracer = WavefrontTracer(reporter=composite_reporter) 
+tracer = WavefrontTracer(reporter=composite_reporter,
+                         application_tags=application_tags) 
 ```
