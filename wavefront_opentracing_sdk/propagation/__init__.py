@@ -9,5 +9,3 @@ from wavefront_opentracing_sdk.propagation.textmap \
 from wavefront_opentracing_sdk.propagation.http import HTTPPropagator
 from wavefront_opentracing_sdk.propagation.registry \
     import PropagatorRegistry
-
-__all__ = ['TextMapPropagator', 'HTTPPropagator', 'PropagatorRegistry']

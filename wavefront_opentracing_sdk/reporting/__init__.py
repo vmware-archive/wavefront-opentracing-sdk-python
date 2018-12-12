@@ -11,5 +11,3 @@ from wavefront_opentracing_sdk.reporting.composite \
 
 from wavefront_opentracing_sdk.reporting.wavefront \
     import WavefrontSpanReporter
-
-__all__ = ['ConsoleReporter', 'CompositeReporter', 'WavefrontSpanReporter']
