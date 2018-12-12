@@ -5,8 +5,8 @@ TextMap Propagator.
 """
 from uuid import UUID
 
-from wavefront_opentracing_python_sdk.propagation import propagator
-from wavefront_opentracing_python_sdk.span_context import WavefrontSpanContext
+from wavefront_opentracing_sdk.propagation import propagator
+from wavefront_opentracing_sdk.span_context import WavefrontSpanContext
 
 
 class TextMapPropagator(propagator.Propagator):

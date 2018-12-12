@@ -4,7 +4,7 @@ Propagator Registry.
 @author: Hao Song (songhao@vmware.com)
 """
 from opentracing.propagation import Format
-from wavefront_opentracing_python_sdk.propagation import textmap, http
+from wavefront_opentracing_sdk.propagation import textmap, http
 
 
 # pylint: disable=useless-object-inheritance
@@ -24,7 +24,7 @@ class PropagatorRegistry(object):
         :param format: Format of propagator.
         :type format: opentracing.propagation.Format
         :return: Propagator of given format
-        :rtype: wavefront_opentracing_python_sdk.propagation.Propagator
+        :rtype: wavefront_opentracing_sdk.propagation.Propagator
         """
         return self.propagators.get(format)
 

@@ -4,7 +4,7 @@ Wavefront Span Reporter.
 @author: Hao Song (songhao@vmware.com)
 """
 import logging
-from wavefront_opentracing_python_sdk.reporting import reporter
+from wavefront_opentracing_sdk.reporting import reporter
 
 
 class WavefrontSpanReporter(reporter.Reporter):

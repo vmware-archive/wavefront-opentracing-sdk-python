@@ -4,7 +4,7 @@ Composite Reporter.
 @author: Hao Song (songhao@vmware.com)
 """
 from __future__ import absolute_import
-from wavefront_opentracing_python_sdk.reporting import reporter
+from wavefront_opentracing_sdk.reporting import reporter
 
 
 class CompositeReporter(reporter.Reporter):
