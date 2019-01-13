@@ -8,6 +8,7 @@ from opentracing.propagation import Format
 from wavefront_sdk.common import ApplicationTags
 from wavefront_opentracing_sdk import WavefrontTracer
 from wavefront_opentracing_sdk.reporting import ConsoleReporter
+from wavefront_opentracing_sdk.sampling import ConstantSampler
 
 
 class TestTracer(unittest.TestCase):
@@ -20,7 +21,8 @@ class TestTracer(unittest.TestCase):
 
     def test_inject_extract(self):
         """Test Inject / Extract."""
-        tracer = WavefrontTracer(ConsoleReporter(), self.application_tags)
+        tracer = WavefrontTracer(ConsoleReporter(), self.application_tags,
+                                 samplers=[ConstantSampler(True)])
         span = tracer.start_span('test_op')
         self.assertIsNotNone(span)
         span.set_baggage_item("customer", "test_customer")
@@ -29,8 +31,19 @@ class TestTracer(unittest.TestCase):
         tracer.inject(span.context, Format.TEXT_MAP, carrier)
         span.finish()
         ctx = tracer.extract(Format.TEXT_MAP, carrier)
+        self.assertTrue(ctx.is_sampled())
+        self.assertTrue(ctx.get_sampling_decision())
         self.assertEqual("test_customer", ctx.get_baggage_item("customer"))
         self.assertEqual("mobile", ctx.get_baggage_item("request_type"))
+
+    def test_sampling(self):
+        """Test Sampling."""
+        tracer = WavefrontTracer(ConsoleReporter(), self.application_tags,
+                                 samplers=[ConstantSampler(True)])
+        self.assertTrue(tracer.sample("test_op", 1, 0))
+        tracer = WavefrontTracer(ConsoleReporter(), self.application_tags,
+                                 samplers=[ConstantSampler(False)])
+        self.assertFalse(tracer.sample("test_op", 1, 0))
 
     def test_active_span(self):
         """Test Active Span."""

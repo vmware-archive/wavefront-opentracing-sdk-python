@@ -32,7 +32,8 @@ class ConsoleReporter(reporter.Reporter):
             wavefront_span.get_tags(),
             span_logs=None,
             default_source="unknown")
-        print(line_data)
+        print("Finished span: sampling=%s %s" %
+              (wavefront_span.context.get_sampling_decision(), line_data))
 
     def get_failure_count(self):
         """No-op."""

@@ -7,16 +7,22 @@ Wavefront Tracer.
 import time
 import uuid
 import opentracing
+import logging
 from opentracing.scope_managers import ThreadLocalScopeManager
 from wavefront_opentracing_sdk.propagation import registry
+from wavefront_opentracing_sdk.sampling.sampler import Sampler
 from wavefront_opentracing_sdk.span import WavefrontSpan
 from wavefront_opentracing_sdk.span_context import WavefrontSpanContext
+
+logging.basicConfig(level=logging.INFO)
+LOGGER = logging.getLogger(__name__)
 
 
 class WavefrontTracer(opentracing.Tracer):
     """Wavefront Tracer."""
 
-    def __init__(self, reporter, application_tags, global_tags=None):
+    def __init__(self, reporter, application_tags, global_tags=None,
+                 samplers=None):
         """
         Construct Wavefront Tracer.
 
@@ -26,11 +32,14 @@ class WavefrontTracer(opentracing.Tracer):
         :type application_tags: :class:`ApplicationTags`
         :param global_tags: Global tags for the tracer
         :type global_tags: list of pair
+        :param samplers: Samplers for the tracer
+        :type samplers: list of samplers
         """
         super(WavefrontTracer, self).__init__(ThreadLocalScopeManager())
         self._reporter = reporter
         self._tags = global_tags or []
         self._tags.extend(application_tags.get_as_list())
+        self._samplers = samplers
         self.registry = registry.PropagatorRegistry()
 
     # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
@@ -111,7 +120,16 @@ class WavefrontTracer(opentracing.Tracer):
         else:
             trace_id = parent.trace_id
             span_id = uuid.uuid1()
-        span_ctx = WavefrontSpanContext(trace_id, span_id, baggage)
+        sampling = None if parent is None else parent.get_sampling_decision()
+        span_ctx = WavefrontSpanContext(trace_id, span_id, baggage, sampling)
+        if not span_ctx.is_sampled():
+            # this indicates a root span and that no decision has been
+            # inherited from a parent span. perform head based sampling as no
+            # sampling decision has been obtained for this span yet.
+            decision = self.sample(
+                operation_name,
+                self.get_least_significant_bits(trace_id), 0)
+            span_ctx = span_ctx.with_sampling_decision(decision)
         return WavefrontSpan(self, operation_name, span_ctx, start_time,
                              parents, follows, tags)
 
@@ -210,3 +228,33 @@ class WavefrontTracer(opentracing.Tracer):
     def report_span(self, span):
         """Report span through the reporter."""
         self._reporter.report(span)
+
+    def sample(self, operation_name, trace_id, duration):
+        if not self._samplers:
+            return True
+        early_sampling = duration == 0
+        for sampler in self._samplers:
+            if not isinstance(sampler, Sampler):
+                continue
+            do_sample = early_sampling == sampler.is_early()
+            if do_sample and sampler.sample(
+                    operation_name,
+                    self.get_least_significant_bits(trace_id),
+                    duration):
+                if LOGGER.isEnabledFor(logging.DEBUG):
+                    LOGGER.debug("%s=true op=%s" % sampler.__class__.__name__,
+                                 operation_name)
+                return True
+            if LOGGER.isEnabledFor(logging.DEBUG):
+                LOGGER.debug("%s=false op=%s" % sampler.__class__.__name__,
+                             operation_name)
+        return False
+
+    @staticmethod
+    def get_least_significant_bits(uuid):
+        sp = str(uuid).split("-")
+        lsb_s = "".join(sp[-2:])
+        lsb = int(lsb_s, 16)
+        if int(lsb_s[0], 16) > 7:
+            lsb = lsb - 0x10000000000000000
+        return lsb
