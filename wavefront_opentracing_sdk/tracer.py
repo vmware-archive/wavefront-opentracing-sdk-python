@@ -3,7 +3,7 @@ Wavefront Tracer.
 
 @author: Hao Song (songhao@vmware.com)
 """
-
+from __future__ import division
 import re
 import time
 import uuid

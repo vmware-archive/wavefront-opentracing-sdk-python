@@ -6,7 +6,10 @@ Unit Tests for Wavefront Span.
 import unittest
 import uuid
 import time
-from unittest import mock
+try:
+    import mock
+except ImportError:
+    from unittest import mock
 from opentracing.ext.tags import SAMPLING_PRIORITY, ERROR
 from wavefront_sdk.common import ApplicationTags
 from wavefront_opentracing_sdk import WavefrontTracer, WavefrontSpanContext
@@ -156,7 +159,7 @@ class TestSpan(unittest.TestCase):
                                  report_frequency_millis=500)
         span = tracer.start_active_span(operation_name)
         span.close()
-        time.sleep(1)
+        time.sleep(61)
         tracer.close()
         # wf_sender.send_metric("sdfsdf", 0, 0, "dfgdf", None)
         print(wf_sender.mock_calls)
