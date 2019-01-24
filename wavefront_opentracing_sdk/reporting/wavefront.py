@@ -56,3 +56,11 @@ class WavefrontSpanReporter(reporter.Reporter):
     def close(self):
         """Close the wavefront client."""
         self.sender.close()
+
+    def get_source(self):
+        """Get the source of WavefrontSpanReporter."""
+        return self.source
+
+    def get_wavefront_sender(self):
+        """Get the Wavefront Sender."""
+        return self.sender

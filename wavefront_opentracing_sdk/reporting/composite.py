@@ -50,3 +50,7 @@ class CompositeReporter(reporter.Reporter):
         """Close all reporters inside the composite reporter."""
         for rep in self.reporters:
             rep.close()
+
+    def get_reporters(self):
+        """Return a copy so that original list is not modified."""
+        return list(self.reporters)

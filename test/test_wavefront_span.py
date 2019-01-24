@@ -5,10 +5,13 @@ Unit Tests for Wavefront Span.
 """
 import unittest
 import uuid
+import time
+from unittest import mock
 from opentracing.ext.tags import SAMPLING_PRIORITY, ERROR
 from wavefront_sdk.common import ApplicationTags
 from wavefront_opentracing_sdk import WavefrontTracer, WavefrontSpanContext
-from wavefront_opentracing_sdk.reporting import ConsoleReporter
+from wavefront_opentracing_sdk.reporting import ConsoleReporter, \
+    WavefrontSpanReporter
 from wavefront_opentracing_sdk.sampling import ConstantSampler
 
 
@@ -141,6 +144,71 @@ class TestSpan(unittest.TestCase):
         self.assertTrue(span.context.is_sampled())
         self.assertIsNotNone(span.context.get_sampling_decision())
         self.assertFalse(span.context.get_sampling_decision())
+
+    @mock.patch('wavefront_sdk.proxy.WavefrontProxyClient')
+    def test_valid_wavefront_span(self, wf_sender):
+        operation_name = "dummy_op"
+        source = "wavefront_source"
+        wf_sender = wf_sender()
+        tracer = WavefrontTracer(WavefrontSpanReporter(wf_sender, source),
+                                 self.application_tags,
+                                 samplers=[ConstantSampler(True)],
+                                 report_frequency_millis=500)
+        span = tracer.start_active_span(operation_name)
+        span.close()
+        time.sleep(1)
+        tracer.close()
+        # wf_sender.send_metric("sdfsdf", 0, 0, "dfgdf", None)
+        print(wf_sender.mock_calls)
+        wf_sender.assert_has_calls([
+            mock.call.send_span(
+                operation_name, mock.ANY, 0, source, mock.ANY, mock.ANY, [],
+                [], [('application', 'app'),
+                     ('service', 'service'),
+                     ('cluster', 'us-west-1'),
+                     ('shard', 'primary'),
+                     ('custom_k', 'custom_v')],
+                span_logs=None),
+            mock.call.send_metric(
+                name='app.service.%s.invocation.count' % operation_name,
+                source=source,
+                tags={'application': 'app',
+                      'service': 'service',
+                      'cluster': 'us-west-1',
+                      'shard': 'primary',
+                      'custom_k': 'custom_v',
+                      'operationName': 'dummy_op'},
+                timestamp=None, value=1),
+            mock.call.send_metric(
+                name='app.service.%s.total_time.millis.count' % operation_name,
+                source=source,
+                tags={'application': 'app', 'service': 'service',
+                      'cluster': 'us-west-1', 'shard': 'primary',
+                      'custom_k': 'custom_v', 'operationName': 'dummy_op'},
+                timestamp=None, value=mock.ANY),
+            mock.call.send_metric(
+                '~component.heartbeat', 1.0, mock.ANY,
+                source,
+                {'application': 'app',
+                 'cluster': 'us-west-1',
+                 'service': 'service', 'shard': 'primary',
+                 'component': 'wavefront-generated'}),
+            # TODO: pass a clock to Wavefront Histogram to advance a minute bin
+            # and uncomment the following call
+            #
+            # mock.call.send_distribution(
+            #     centroids=mock.ANY,
+            #     histogram_granularities={'!M'},
+            #     name='app.service.%s.duration.micros' % operation_name,
+            #     source=source,
+            #     tags={'application': 'app',
+            #           'service': 'service',
+            #           'cluster': 'us-west-1',
+            #           'shard': 'primary',
+            #           'custom_k': 'custom_v',
+            #           'operationName': operation_name},
+            #     timestamp=mock.ANY)
+        ], any_order=True)
 
 
 if __name__ == '__main__':

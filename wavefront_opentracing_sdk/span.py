@@ -45,6 +45,7 @@ class WavefrontSpan(Span):
         self.follows = follows
         self.tags = tags
         self._finished = False
+        self._is_error = False
         self._force_sampling = None
         self.update_lock = threading.Lock()
 
@@ -77,6 +78,8 @@ class WavefrontSpan(Span):
                     self._force_sampling = value > 0
                     self._context = self._context.with_sampling_decision(
                         self._force_sampling)
+                if key is ERROR:
+                    self._is_error = True
                 # allow span to be reported if error tag is set.
                 if not self._force_sampling and key is ERROR and isinstance(
                         value, bool):
@@ -162,6 +165,9 @@ class WavefrontSpan(Span):
         if self._context.is_sampled() and \
                 self._context.get_sampling_decision():
             self.tracer.report_span(self)
+        # irrespective of sampling, report wavefront-generated
+        # metrics/histograms to Wavefront
+        self.tracer.report_wavefront_generated_data(self)
 
     @property
     def trace_id(self):
@@ -268,3 +274,7 @@ class WavefrontSpan(Span):
             else:
                 tag_map[key].append(val)
         return tag_map
+
+    def is_error(self):
+        """Get if the span is error or not."""
+        return self._is_error
