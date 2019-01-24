@@ -10,7 +10,9 @@ python:
 
 install:
   - pip install mock
-  - pip install wavefront-pyformance
+#  TODO: change back once new version of pyformance is released.
+#  - pip install wavefront-pyformance
+  - pip install git+https://github.com/wavefrontHQ/wavefront-pyformance.git
   - pip install opentracing
   - pip install wavefront-sdk-python
 

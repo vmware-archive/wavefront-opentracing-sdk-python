@@ -159,7 +159,7 @@ class TestSpan(unittest.TestCase):
                                  report_frequency_millis=500)
         span = tracer.start_active_span(operation_name)
         span.close()
-        time.sleep(61)
+        time.sleep(1)
         tracer.close()
         # wf_sender.send_metric("sdfsdf", 0, 0, "dfgdf", None)
         print(wf_sender.mock_calls)
