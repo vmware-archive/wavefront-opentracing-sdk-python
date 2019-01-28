@@ -10,11 +10,14 @@ python:
 
 install:
   - pip install mock
+  - pip install freezegun
 #  TODO: change back once new version of pyformance is released.
 #  - pip install wavefront-pyformance
   - pip install git+https://github.com/wavefrontHQ/wavefront-pyformance.git
   - pip install opentracing
-  - pip install wavefront-sdk-python
+#  TODO: change back once new version of wavefront-sdk-python is released.
+#  - pip install wavefront-sdk-python
+  - pip install git+https://github.com/wavefrontHQ/wavefront-sdk-python.git
 
 script:
   - python -m unittest discover

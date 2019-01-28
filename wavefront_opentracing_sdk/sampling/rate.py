@@ -31,6 +31,7 @@ class RateSampler(Sampler):
         return True
 
     def set_sampling_rate(self, sampling_rate):
+        """Sets the sampling rate for this sampler."""
         if sampling_rate < self._MIN_SAMPLING_RATE or \
                 sampling_rate > self._MAX_SAMPLING_RATE:
             raise ValueError("sampling rate must be between %s and %s" % (

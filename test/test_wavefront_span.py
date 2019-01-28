@@ -6,6 +6,8 @@ Unit Tests for Wavefront Span.
 import unittest
 import uuid
 import time
+import datetime
+from freezegun import freeze_time
 try:
     import mock
 except ImportError:
@@ -150,6 +152,7 @@ class TestSpan(unittest.TestCase):
 
     @mock.patch('wavefront_sdk.proxy.WavefrontProxyClient')
     def test_valid_wavefront_span(self, wf_sender):
+        """Test wavefront generated data."""
         operation_name = "dummy_op"
         source = "wavefront_source"
         wf_sender = wf_sender()
@@ -157,12 +160,13 @@ class TestSpan(unittest.TestCase):
                                  self.application_tags,
                                  samplers=[ConstantSampler(True)],
                                  report_frequency_millis=500)
-        span = tracer.start_active_span(operation_name)
-        span.close()
-        time.sleep(1)
-        tracer.close()
-        # wf_sender.send_metric("sdfsdf", 0, 0, "dfgdf", None)
-        print(wf_sender.mock_calls)
+        with freeze_time(datetime.datetime(year=1, month=1, day=1)) as \
+                frozen_datetime:
+            span = tracer.start_active_span(operation_name)
+            span.close()
+            frozen_datetime.tick(delta=datetime.timedelta(seconds=61))
+            time.sleep(1)
+            tracer.close()
         wf_sender.assert_has_calls([
             mock.call.send_span(
                 operation_name, mock.ANY, 0, source, mock.ANY, mock.ANY, [],
@@ -196,21 +200,18 @@ class TestSpan(unittest.TestCase):
                  'cluster': 'us-west-1',
                  'service': 'service', 'shard': 'primary',
                  'component': 'wavefront-generated'}),
-            # TODO: pass a clock to Wavefront Histogram to advance a minute bin
-            # and uncomment the following call
-            #
-            # mock.call.send_distribution(
-            #     centroids=mock.ANY,
-            #     histogram_granularities={'!M'},
-            #     name='app.service.%s.duration.micros' % operation_name,
-            #     source=source,
-            #     tags={'application': 'app',
-            #           'service': 'service',
-            #           'cluster': 'us-west-1',
-            #           'shard': 'primary',
-            #           'custom_k': 'custom_v',
-            #           'operationName': operation_name},
-            #     timestamp=mock.ANY)
+            mock.call.send_distribution(
+                centroids=mock.ANY,
+                histogram_granularities={'!M'},
+                name='app.service.%s.duration.micros' % operation_name,
+                source=source,
+                tags={'application': 'app',
+                      'service': 'service',
+                      'cluster': 'us-west-1',
+                      'shard': 'primary',
+                      'custom_k': 'custom_v',
+                      'operationName': operation_name},
+                timestamp=mock.ANY)
         ], any_order=True)
 
 

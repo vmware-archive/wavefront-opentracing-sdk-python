@@ -7,8 +7,8 @@ from __future__ import division
 import re
 import time
 import uuid
-import opentracing
 import logging
+import opentracing
 from opentracing.scope_managers import ThreadLocalScopeManager
 from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter, \
     CompositeReporter
@@ -25,6 +25,7 @@ logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
 
+# pylint: disable=too-many-instance-attributes
 class WavefrontTracer(opentracing.Tracer):
     """Wavefront Tracer."""
     WAVEFRONT_GENERATED_COMPONENT = "wavefront-generated"
@@ -34,6 +35,7 @@ class WavefrontTracer(opentracing.Tracer):
     DURATION_SUFFIX = ".duration.micros"
     OPERATION_NAME_TAG = "operationName"
 
+    # pylint: disable=too-many-arguments
     def __init__(self, reporter, application_tags, global_tags=None,
                  samplers=None, report_frequency_millis=None):
         """
@@ -258,6 +260,7 @@ class WavefrontTracer(opentracing.Tracer):
         self._reporter.report(span)
 
     def sample(self, operation_name, trace_id, duration):
+        """Return the decision of sampling."""
         if not self._samplers:
             return True
         early_sampling = duration == 0
@@ -270,15 +273,16 @@ class WavefrontTracer(opentracing.Tracer):
                     self.get_least_significant_bits(trace_id),
                     duration):
                 if LOGGER.isEnabledFor(logging.DEBUG):
-                    LOGGER.debug("%s=true op=%s" % sampler.__class__.__name__,
+                    LOGGER.debug("%s=true op=%s", sampler.__class__.__name__,
                                  operation_name)
                 return True
             if LOGGER.isEnabledFor(logging.DEBUG):
-                LOGGER.debug("%s=false op=%s" % sampler.__class__.__name__,
+                LOGGER.debug("%s=false op=%s", sampler.__class__.__name__,
                              operation_name)
         return False
 
     def report_wavefront_generated_data(self, span):
+        """Report Wavefront generated data from spans."""
         if self.wf_internal_reporter is None:
             # WavefrontSpanReporter not set, so no tracing spans will be
             # reported as metrics/histograms.
@@ -287,35 +291,33 @@ class WavefrontTracer(opentracing.Tracer):
         # names can have spaces and other invalid metric name characters.
         point_tags = {self.OPERATION_NAME_TAG: span.get_operation_name()}
         self.wf_internal_reporter.registry.counter(
-            self.sanitize("{}{}{}".format(self.application_service_prefix,
-                                          span.get_operation_name(),
-                                          self.INVOCATION_SUFFIX)),
-            point_tags).inc()
+            self.sanitize(self.application_service_prefix +
+                          span.get_operation_name() +
+                          self.INVOCATION_SUFFIX), point_tags).inc()
         if span.is_error():
             self.wf_internal_reporter.registry.counter(
-                self.sanitize("{}{}{}".format(self.application_service_prefix,
-                                              span.get_operation_name(),
-                                              self.ERROR_SUFFIX))).inc()
+                self.sanitize(self.application_service_prefix +
+                              span.get_operation_name() +
+                              self.ERROR_SUFFIX)).inc()
         # Convert from secs to millis and add to duration counter.
         span_duration_millis = span.get_duration_time() * 1000
         self.wf_internal_reporter.registry.counter(
-            self.sanitize("{}{}{}".format(self.application_service_prefix,
-                                          span.get_operation_name(),
-                                          self.TOTAL_TIME_SUFFIX)),
-            point_tags).inc(
-            span_duration_millis)
+            self.sanitize(self.application_service_prefix +
+                          span.get_operation_name() +
+                          self.TOTAL_TIME_SUFFIX), point_tags).\
+            inc(span_duration_millis)
         # Convert from millis to micros and add to histogram.
         span_duration_micros = span_duration_millis * 1000
         wavefront_histogram(
             self.wf_internal_reporter.registry,
-            self.sanitize("{}{}{}".format(self.application_service_prefix,
-                                          span.get_operation_name(),
-                                          self.DURATION_SUFFIX)),
-            point_tags).add(
-            span_duration_micros)
+            self.sanitize(self.application_service_prefix +
+                          span.get_operation_name() +
+                          self.DURATION_SUFFIX), point_tags).\
+            add(span_duration_micros)
 
     def instantiate_wavefront_stats_reporter(self, wf_span_reporter,
                                              application_tags):
+        """Instantiate WavefrontReporter and Heartbeater Service"""
         # TODO: this helper method should go in Tier 1 SDK
         wf_internal_reporter = WavefrontReporter(
             source=wf_span_reporter.source,
@@ -337,6 +339,7 @@ class WavefrontTracer(opentracing.Tracer):
 
     @staticmethod
     def get_wavefront_span_reporter(reporter):
+        """Get WavefrontSpanReporter from a given reporter."""
         if isinstance(reporter, WavefrontSpanReporter):
             return reporter
         if isinstance(reporter, CompositeReporter):
@@ -359,9 +362,9 @@ class WavefrontTracer(opentracing.Tracer):
         return whitespace_sanitized
 
     @staticmethod
-    def get_least_significant_bits(uuid):
-        sp = str(uuid).split("-")
-        lsb_s = "".join(sp[-2:])
+    def get_least_significant_bits(uuid_val):
+        """Equivalent to getLeastSignificantBits() in Java."""
+        lsb_s = "".join(str(uuid_val).split("-")[-2:])
         lsb = int(lsb_s, 16)
         if int(lsb_s[0], 16) > 7:
             lsb = lsb - 0x10000000000000000

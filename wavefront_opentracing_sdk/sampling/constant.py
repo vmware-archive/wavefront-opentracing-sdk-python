@@ -24,4 +24,5 @@ class ConstantSampler(Sampler):
         return True
 
     def set_decision(self, decision):
+        """Sets the decision for this sampler."""
         self._decision = decision

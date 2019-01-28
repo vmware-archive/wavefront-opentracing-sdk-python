@@ -33,8 +33,8 @@ class TextMapPropagator(propagator.Propagator):
         for key, val in span_context.baggage.items():
             carrier.update({self._BAGGAGE_PREFIX + key: val})
         if span_context.is_sampled():
-            carrier.update({self._SAMPLE:
-                                str(span_context.get_sampling_decision())})
+            carrier.update({self._SAMPLE: str(span_context.
+                                              get_sampling_decision())})
 
     def extract(self, carrier):
         """
@@ -58,7 +58,7 @@ class TextMapPropagator(propagator.Propagator):
             elif key == self._SPAN_ID:
                 span_id = UUID(val)
             elif key == self._SAMPLE:
-                sampling = True if val is 'True' else False
+                sampling = True if val == 'True' else False
             elif key.startswith(self._BAGGAGE_PREFIX):
                 baggage.update({self.strip_prefix(key): val})
         if trace_id is None or span_id is None:

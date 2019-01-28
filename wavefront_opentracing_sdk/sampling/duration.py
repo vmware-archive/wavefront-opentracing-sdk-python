@@ -25,4 +25,5 @@ class DurationSampler(Sampler):
         return False
 
     def set_duration(self, duration):
+        """Sets the duration for this sampler."""
         self._duration = duration
