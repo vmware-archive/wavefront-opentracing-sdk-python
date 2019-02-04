@@ -71,7 +71,7 @@ class WavefrontSpan(Span):
         """
         with self.update_lock:
             if not is_blank(key) and value:
-                self.tags.append((key, value))
+                self.tags.append((key, str(value)))
                 # allow span to be reported if sampling.priority is > 0.
                 if key is SAMPLING_PRIORITY and isinstance(value,
                                                            numbers.Number):

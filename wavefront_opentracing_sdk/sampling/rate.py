@@ -19,21 +19,21 @@ class RateSampler(Sampler):
 
     def __init__(self, sampling_rate):
         self._boundary = None
-        self._MIN_SAMPLING_RATE = 0.0
-        self._MAX_SAMPLING_RATE = 1.0
-        self._MOD_FACTOR = 10000
+        self.MIN_SAMPLING_RATE = 0.0
+        self.MAX_SAMPLING_RATE = 1.0
+        self.MOD_FACTOR = 10000
         self.set_sampling_rate(sampling_rate)
 
     def sample(self, operation_name, trace_id, duration):
-        return abs(trace_id % self._MOD_FACTOR) <= self._boundary
+        return abs(trace_id % self.MOD_FACTOR) <= self._boundary
 
     def is_early(self):
         return True
 
     def set_sampling_rate(self, sampling_rate):
         """Sets the sampling rate for this sampler."""
-        if sampling_rate < self._MIN_SAMPLING_RATE or \
-                sampling_rate > self._MAX_SAMPLING_RATE:
-            raise ValueError("sampling rate must be between %s and %s" % (
-                self._MIN_SAMPLING_RATE, self._MAX_SAMPLING_RATE))
-        self._boundary = sampling_rate * self._MOD_FACTOR
+        if sampling_rate < self.MIN_SAMPLING_RATE or \
+                sampling_rate > self.MAX_SAMPLING_RATE:
+            raise ValueError("sampling rate must be between {} and {}".format(
+                self.MIN_SAMPLING_RATE, self.MAX_SAMPLING_RATE))
+        self._boundary = sampling_rate * self.MOD_FACTOR

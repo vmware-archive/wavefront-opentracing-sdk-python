@@ -10,16 +10,16 @@ import uuid
 import logging
 import opentracing
 from opentracing.scope_managers import ThreadLocalScopeManager
+from wavefront_sdk.common import HeartbeaterService
+from wavefront_pyformance.wavefront_reporter import WavefrontReporter
+from wavefront_pyformance.tagged_registry import TaggedRegistry
+from wavefront_pyformance.wavefront_histogram import wavefront_histogram
 from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter, \
     CompositeReporter
 from wavefront_opentracing_sdk.propagation import registry
 from wavefront_opentracing_sdk.sampling.sampler import Sampler
 from wavefront_opentracing_sdk.span import WavefrontSpan
 from wavefront_opentracing_sdk.span_context import WavefrontSpanContext
-from wavefront_pyformance.wavefront_reporter import WavefrontReporter
-from wavefront_pyformance.tagged_registry import TaggedRegistry
-from wavefront_pyformance.wavefront_histogram import wavefront_histogram
-from wavefront_sdk.common import HeartbeaterService
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ class WavefrontTracer(opentracing.Tracer):
         self._tags.extend(application_tags.get_as_list())
         self._samplers = samplers
         self.registry = registry.PropagatorRegistry()
-        self.application_service_prefix = "%s.%s." % (
+        self.application_service_prefix = "{}.{}.".format(
             application_tags.application, application_tags.service)
         self.report_frequency_millis = report_frequency_millis
         wf_span_reporter = self.get_wavefront_span_reporter(reporter)
@@ -224,7 +224,7 @@ class WavefrontTracer(opentracing.Tracer):
             span_context = span_context.context
         if not isinstance(span_context, WavefrontSpanContext):
             raise TypeError(
-                'Expecting WavefrontSpanContext, not ' + type(span_context))
+                "Expecting WavefrontSpanContext, not " + type(span_context))
         propagator.inject(span_context, carrier)
 
     # pylint: disable=redefined-builtin
@@ -304,7 +304,7 @@ class WavefrontTracer(opentracing.Tracer):
         self.wf_internal_reporter.registry.counter(
             self.sanitize(self.application_service_prefix +
                           span.get_operation_name() +
-                          self.TOTAL_TIME_SUFFIX), point_tags).\
+                          self.TOTAL_TIME_SUFFIX), point_tags). \
             inc(span_duration_millis)
         # Convert from millis to micros and add to histogram.
         span_duration_micros = span_duration_millis * 1000
@@ -312,7 +312,7 @@ class WavefrontTracer(opentracing.Tracer):
             self.wf_internal_reporter.registry,
             self.sanitize(self.application_service_prefix +
                           span.get_operation_name() +
-                          self.DURATION_SUFFIX), point_tags).\
+                          self.DURATION_SUFFIX), point_tags). \
             add(span_duration_micros)
 
     def instantiate_wavefront_stats_reporter(self, wf_span_reporter,
@@ -323,7 +323,7 @@ class WavefrontTracer(opentracing.Tracer):
             source=wf_span_reporter.source,
             registry=TaggedRegistry(),
             reporting_interval=self.report_frequency_millis / 1000,
-            tags=dict(application_tags.get_as_list())).\
+            tags=dict(application_tags.get_as_list())). \
             report_minute_distribution()
         wf_internal_reporter.wavefront_client = wf_span_reporter. \
             get_wavefront_sender()
