@@ -56,7 +56,7 @@ class WavefrontTracer(opentracing.Tracer):
         self._tags.extend(application_tags.get_as_list())
         self._samplers = samplers
         self.registry = registry.PropagatorRegistry()
-        self.application_service_prefix = "{}.{}.".format(
+        self.application_service_prefix = "tracing.derived.{}.{}.".format(
             application_tags.application, application_tags.service)
         self.report_frequency_millis = report_frequency_millis
         wf_span_reporter = self.get_wavefront_span_reporter(reporter)
