@@ -114,3 +114,6 @@ tracer.close()
 ```
 ## Cross Process Context Propagation
 See the [context propagation documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-python/tree/master/docs/contextpropagation.md) for details on propagating span contexts across process boundaries.
+
+## RED Metrics
+See the [RED metrics documentation](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-python/blob/master/docs/metrics.md) for details on the out-of-the-box metrics and histograms that are provided.
