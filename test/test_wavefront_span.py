@@ -177,18 +177,19 @@ class TestSpan(unittest.TestCase):
                      ('custom_k', 'custom_v')],
                 span_logs=None),
             mock.call.send_metric(
-                name='app.service.{}.invocation.count'.format(operation_name),
+                name='tracing.derived.app.service.{}.invocation.'
+                     'count'.format(operation_name),
                 source=source,
                 tags={'application': 'app',
                       'service': 'service',
                       'cluster': 'us-west-1',
                       'shard': 'primary',
                       'custom_k': 'custom_v',
-                      'operationName': 'dummy_op'},
+                      'operationName': operation_name},
                 timestamp=None, value=1),
             mock.call.send_metric(
-                name='app.service.{}.total_time.millis.count'.format(
-                    operation_name),
+                name='tracing.derived.app.service.{}.total_time.millis.'
+                     'count'.format(operation_name),
                 source=source,
                 tags={'application': 'app', 'service': 'service',
                       'cluster': 'us-west-1', 'shard': 'primary',
@@ -204,7 +205,8 @@ class TestSpan(unittest.TestCase):
             mock.call.send_distribution(
                 centroids=mock.ANY,
                 histogram_granularities={'!M'},
-                name='app.service.{}.duration.micros'.format(operation_name),
+                name='tracing.derived.app.service.{}.duration.'
+                     'micros'.format(operation_name),
                 source=source,
                 tags={'application': 'app',
                       'service': 'service',
