@@ -298,7 +298,7 @@ class WavefrontTracer(opentracing.Tracer):
             self.wf_internal_reporter.registry.counter(
                 self.sanitize(self.application_service_prefix +
                               span.get_operation_name() +
-                              self.ERROR_SUFFIX)).inc()
+                              self.ERROR_SUFFIX), point_tags).inc()
         # Convert from secs to millis and add to duration counter.
         span_duration_millis = span.get_duration_time() * 1000
         self.wf_internal_reporter.registry.counter(
