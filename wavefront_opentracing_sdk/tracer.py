@@ -34,6 +34,8 @@ class WavefrontTracer(opentracing.Tracer):
     TOTAL_TIME_SUFFIX = ".total_time.millis"
     DURATION_SUFFIX = ".duration.micros"
     OPERATION_NAME_TAG = "operationName"
+    OPENTRACING_COMPONENT = "opentracing"
+    PYTHON_COMPONENT = "python"
 
     # pylint: disable=too-many-arguments
     def __init__(self, reporter, application_tags, global_tags=None,
@@ -331,7 +333,9 @@ class WavefrontTracer(opentracing.Tracer):
         heartbeater_service = HeartbeaterService(
             wavefront_client=wf_span_reporter.get_wavefront_sender(),
             application_tags=application_tags,
-            component=self.WAVEFRONT_GENERATED_COMPONENT,
+            components=[self.WAVEFRONT_GENERATED_COMPONENT,
+                        self.OPENTRACING_COMPONENT,
+                        self.PYTHON_COMPONENT],
             source=wf_span_reporter.source,
             reporting_interval_seconds=self.report_frequency_millis / 1000
         )
