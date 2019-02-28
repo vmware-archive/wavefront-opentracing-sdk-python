@@ -34,7 +34,8 @@ class WavefrontSpan(Span):
         :type parents: list of uuid.UUID
         :param follows: List of UUIDs of follows span
         :type follows: list of uuid.UUID
-        :param tags:
+        :param tags: Tags of the span
+        :type tags: list of tuple
         """
         super(WavefrontSpan, self).__init__(tracer=tracer, context=context)
         self._context = context
@@ -43,7 +44,10 @@ class WavefrontSpan(Span):
         self.duration_time = 0
         self.parents = parents
         self.follows = follows
-        self.tags = tags
+        self.tags = []
+        for tag in tags:
+            if isinstance(tag, tuple):
+                self.set_tag(tag[0], tag[1])
         self._finished = False
         self._is_error = False
         self._force_sampling = None
@@ -153,8 +157,9 @@ class WavefrontSpan(Span):
             self.duration_time = duration_time
             self._finished = True
         # perform another sampling for duration based samplers
-        if not self._force_sampling and not self._context.is_sampled() \
-                or not self._context.get_sampling_decision():
+        if not self._force_sampling and (
+                not self._context.is_sampled() or
+                not self._context.get_sampling_decision()):
             if self.tracer.sample(
                     self.operation_name,
                     self.trace_id,
