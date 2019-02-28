@@ -3,20 +3,43 @@ Wavefront Tracer.
 
 @author: Hao Song (songhao@vmware.com)
 """
-
+from __future__ import division
+import re
 import time
 import uuid
+import logging
 import opentracing
 from opentracing.scope_managers import ThreadLocalScopeManager
+from wavefront_sdk.common import HeartbeaterService
+from wavefront_pyformance.wavefront_reporter import WavefrontReporter
+from wavefront_pyformance.tagged_registry import TaggedRegistry
+from wavefront_pyformance.wavefront_histogram import wavefront_histogram
+from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter, \
+    CompositeReporter
 from wavefront_opentracing_sdk.propagation import registry
+from wavefront_opentracing_sdk.sampling.sampler import Sampler
 from wavefront_opentracing_sdk.span import WavefrontSpan
 from wavefront_opentracing_sdk.span_context import WavefrontSpanContext
 
+logging.basicConfig(level=logging.INFO)
+LOGGER = logging.getLogger(__name__)
 
+
+# pylint: disable=too-many-instance-attributes
 class WavefrontTracer(opentracing.Tracer):
     """Wavefront Tracer."""
+    WAVEFRONT_GENERATED_COMPONENT = "wavefront-generated"
+    INVOCATION_SUFFIX = ".invocation"
+    ERROR_SUFFIX = ".error"
+    TOTAL_TIME_SUFFIX = ".total_time.millis"
+    DURATION_SUFFIX = ".duration.micros"
+    OPERATION_NAME_TAG = "operationName"
+    OPENTRACING_COMPONENT = "opentracing"
+    PYTHON_COMPONENT = "python"
 
-    def __init__(self, reporter, application_tags, global_tags=None):
+    # pylint: disable=too-many-arguments
+    def __init__(self, reporter, application_tags, global_tags=None,
+                 samplers=None, report_frequency_millis=1000):
         """
         Construct Wavefront Tracer.
 
@@ -26,12 +49,26 @@ class WavefrontTracer(opentracing.Tracer):
         :type application_tags: :class:`ApplicationTags`
         :param global_tags: Global tags for the tracer
         :type global_tags: list of pair
+        :param samplers: Samplers for the tracer
+        :type samplers: list of samplers
         """
         super(WavefrontTracer, self).__init__(ThreadLocalScopeManager())
         self._reporter = reporter
         self._tags = global_tags or []
         self._tags.extend(application_tags.get_as_list())
+        self._samplers = samplers
         self.registry = registry.PropagatorRegistry()
+        self.application_service_prefix = "tracing.derived.{}.{}.".format(
+            application_tags.application, application_tags.service)
+        self.report_frequency_millis = report_frequency_millis
+        wf_span_reporter = self.get_wavefront_span_reporter(reporter)
+        if wf_span_reporter is not None:
+            self.wf_internal_reporter, self.heartbeater_service = self. \
+                instantiate_wavefront_stats_reporter(wf_span_reporter,
+                                                     application_tags)
+        else:
+            self.wf_internal_reporter = None
+            self.heartbeater_service = None
 
     # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
     def start_span(self,
@@ -111,7 +148,16 @@ class WavefrontTracer(opentracing.Tracer):
         else:
             trace_id = parent.trace_id
             span_id = uuid.uuid1()
-        span_ctx = WavefrontSpanContext(trace_id, span_id, baggage)
+        sampling = None if parent is None else parent.get_sampling_decision()
+        span_ctx = WavefrontSpanContext(trace_id, span_id, baggage, sampling)
+        if not span_ctx.is_sampled():
+            # this indicates a root span and that no decision has been
+            # inherited from a parent span. perform head based sampling as no
+            # sampling decision has been obtained for this span yet.
+            decision = self.sample(
+                operation_name,
+                self.get_least_significant_bits(trace_id), 0)
+            span_ctx = span_ctx.with_sampling_decision(decision)
         return WavefrontSpan(self, operation_name, span_ctx, start_time,
                              parents, follows, tags)
 
@@ -180,7 +226,7 @@ class WavefrontTracer(opentracing.Tracer):
             span_context = span_context.context
         if not isinstance(span_context, WavefrontSpanContext):
             raise TypeError(
-                'Expecting WavefrontSpanContext, not ' + type(span_context))
+                "Expecting WavefrontSpanContext, not " + type(span_context))
         propagator.inject(span_context, carrier)
 
     # pylint: disable=redefined-builtin
@@ -206,7 +252,124 @@ class WavefrontTracer(opentracing.Tracer):
     def close(self):
         """Close the reporter to close the tracer."""
         self._reporter.close()
+        if self.wf_internal_reporter is not None:
+            self.wf_internal_reporter.stop()
+        if self.heartbeater_service is not None:
+            self.heartbeater_service.close()
 
     def report_span(self, span):
         """Report span through the reporter."""
         self._reporter.report(span)
+
+    def sample(self, operation_name, trace_id, duration):
+        """Return the decision of sampling."""
+        if not self._samplers:
+            return True
+        early_sampling = duration == 0
+        for sampler in self._samplers:
+            if not isinstance(sampler, Sampler):
+                continue
+            do_sample = early_sampling == sampler.is_early()
+            if do_sample and sampler.sample(
+                    operation_name,
+                    self.get_least_significant_bits(trace_id),
+                    duration):
+                if LOGGER.isEnabledFor(logging.DEBUG):
+                    LOGGER.debug("%s=true op=%s", sampler.__class__.__name__,
+                                 operation_name)
+                return True
+            if LOGGER.isEnabledFor(logging.DEBUG):
+                LOGGER.debug("%s=false op=%s", sampler.__class__.__name__,
+                             operation_name)
+        return False
+
+    def report_wavefront_generated_data(self, span):
+        """Report Wavefront generated data from spans."""
+        if self.wf_internal_reporter is None:
+            # WavefrontSpanReporter not set, so no tracing spans will be
+            # reported as metrics/histograms.
+            return
+        # Need to sanitize metric name as application, service and operation
+        # names can have spaces and other invalid metric name characters.
+        point_tags = {self.OPERATION_NAME_TAG: span.get_operation_name()}
+        self.wf_internal_reporter.registry.counter(
+            self.sanitize(self.application_service_prefix +
+                          span.get_operation_name() +
+                          self.INVOCATION_SUFFIX), point_tags).inc()
+        if span.is_error():
+            self.wf_internal_reporter.registry.counter(
+                self.sanitize(self.application_service_prefix +
+                              span.get_operation_name() +
+                              self.ERROR_SUFFIX), point_tags).inc()
+        # Convert from secs to millis and add to duration counter.
+        span_duration_millis = span.get_duration_time() * 1000
+        self.wf_internal_reporter.registry.counter(
+            self.sanitize(self.application_service_prefix +
+                          span.get_operation_name() +
+                          self.TOTAL_TIME_SUFFIX), point_tags). \
+            inc(span_duration_millis)
+        # Convert from millis to micros and add to histogram.
+        span_duration_micros = span_duration_millis * 1000
+        wavefront_histogram(
+            self.wf_internal_reporter.registry,
+            self.sanitize(self.application_service_prefix +
+                          span.get_operation_name() +
+                          self.DURATION_SUFFIX), point_tags). \
+            add(span_duration_micros)
+
+    def instantiate_wavefront_stats_reporter(self, wf_span_reporter,
+                                             application_tags):
+        """Instantiate WavefrontReporter and Heartbeater Service"""
+        # TODO: this helper method should go in Tier 1 SDK
+        wf_internal_reporter = WavefrontReporter(
+            source=wf_span_reporter.source,
+            registry=TaggedRegistry(),
+            reporting_interval=self.report_frequency_millis / 1000,
+            tags=dict(application_tags.get_as_list())). \
+            report_minute_distribution()
+        wf_internal_reporter.wavefront_client = wf_span_reporter. \
+            get_wavefront_sender()
+        wf_internal_reporter.start()
+        heartbeater_service = HeartbeaterService(
+            wavefront_client=wf_span_reporter.get_wavefront_sender(),
+            application_tags=application_tags,
+            components=[self.WAVEFRONT_GENERATED_COMPONENT,
+                        self.OPENTRACING_COMPONENT,
+                        self.PYTHON_COMPONENT],
+            source=wf_span_reporter.source,
+            reporting_interval_seconds=self.report_frequency_millis / 1000
+        )
+        return wf_internal_reporter, heartbeater_service
+
+    @staticmethod
+    def get_wavefront_span_reporter(reporter):
+        """Get WavefrontSpanReporter from a given reporter."""
+        if isinstance(reporter, WavefrontSpanReporter):
+            return reporter
+        if isinstance(reporter, CompositeReporter):
+            for item in reporter.get_reporters():
+                if isinstance(item, WavefrontSpanReporter):
+                    return item
+        return None
+
+    @staticmethod
+    def sanitize(string):
+        """
+        Sanitize a string, replace whitespace with "-".
+
+        @param string: Input string
+        @return: Sanitized string
+        """
+        whitespace_sanitized = re.sub(r"[\s]+", "-", string)
+        if '"' in whitespace_sanitized:
+            return re.sub(r"[\"]+", '\\\\\"', whitespace_sanitized)
+        return whitespace_sanitized
+
+    @staticmethod
+    def get_least_significant_bits(uuid_val):
+        """Equivalent to getLeastSignificantBits() in Java."""
+        lsb_s = "".join(str(uuid_val).split("-")[-2:])
+        lsb = int(lsb_s, 16)
+        if int(lsb_s[0], 16) > 7:
+            lsb = lsb - 0x10000000000000000
+        return lsb

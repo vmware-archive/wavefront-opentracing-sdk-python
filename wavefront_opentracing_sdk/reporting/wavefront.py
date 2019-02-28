@@ -4,6 +4,7 @@ Wavefront Span Reporter.
 @author: Hao Song (songhao@vmware.com)
 """
 import logging
+import socket
 from wavefront_opentracing_sdk.reporting import reporter
 
 
@@ -20,6 +21,7 @@ class WavefrontSpanReporter(reporter.Reporter):
         :type source: str
         """
         self.sender = client
+        source = source or socket.gethostname()
         super(WavefrontSpanReporter, self).__init__(source)
 
     def report(self, wavefront_span):
@@ -56,3 +58,11 @@ class WavefrontSpanReporter(reporter.Reporter):
     def close(self):
         """Close the wavefront client."""
         self.sender.close()
+
+    def get_source(self):
+        """Get the source of WavefrontSpanReporter."""
+        return self.source
+
+    def get_wavefront_sender(self):
+        """Get the Wavefront Sender."""
+        return self.sender

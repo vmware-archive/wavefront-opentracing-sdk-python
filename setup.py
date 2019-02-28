@@ -16,7 +16,10 @@ VERSION = "1.0.0"
 # prerequisite: setuptools
 # http://pypi.python.org/pypi/setuptools
 
-REQUIRES = ['opentracing>=2', 'wavefront-sdk-python>=1']
+install_requires = ['opentracing>=2', 'wavefront-sdk-python>=1',
+                    'wavefront-pyformance>=0.9.3']
+
+test_requires = ['mock>=2', 'freezegun>=0.3.11']
 
 setup(
     name=NAME,
@@ -25,7 +28,8 @@ setup(
     author_email="songhao@vmware.com",
     url="https://github.com/wavefrontHQ/wavefront-opentracing-sdk-python",
     keywords=["Wavefront SDK", "Wavefront", "OpenTracing"],
-    install_requires=REQUIRES,
+    install_requires=install_requires,
+    test_require=test_requires,
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     include_package_data=True,
     long_description="""\

@@ -4,8 +4,12 @@ Console Reporter.
 @author: Hao Song (songhao@vmware.com)
 """
 from __future__ import print_function
+import logging
 from wavefront_sdk.common.utils import tracing_span_to_line_data
 from wavefront_opentracing_sdk.reporting import reporter
+
+logging.basicConfig(level=logging.INFO)
+LOGGER = logging.getLogger(__name__)
 
 
 class ConsoleReporter(reporter.Reporter):
@@ -32,7 +36,9 @@ class ConsoleReporter(reporter.Reporter):
             wavefront_span.get_tags(),
             span_logs=None,
             default_source="unknown")
-        print(line_data)
+        LOGGER.info("Finished span: sampling=%s %s",
+                    wavefront_span.context.get_sampling_decision(),
+                    line_data)
 
     def get_failure_count(self):
         """No-op."""

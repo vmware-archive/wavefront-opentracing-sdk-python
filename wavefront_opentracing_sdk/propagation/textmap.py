@@ -15,6 +15,7 @@ class TextMapPropagator(propagator.Propagator):
     _BAGGAGE_PREFIX = "wf-ot-"
     _TRACE_ID = _BAGGAGE_PREFIX + "traceid"
     _SPAN_ID = _BAGGAGE_PREFIX + "spanid"
+    _SAMPLE = _BAGGAGE_PREFIX + "sample"
 
     def inject(self, span_context, carrier):
         """
@@ -31,6 +32,9 @@ class TextMapPropagator(propagator.Propagator):
         carrier.update({self._SPAN_ID: str(span_context.get_span_id())})
         for key, val in span_context.baggage.items():
             carrier.update({self._BAGGAGE_PREFIX + key: val})
+        if span_context.is_sampled():
+            carrier.update({self._SAMPLE: str(span_context.
+                                              get_sampling_decision())})
 
     def extract(self, carrier):
         """
@@ -43,6 +47,7 @@ class TextMapPropagator(propagator.Propagator):
         """
         trace_id = None
         span_id = None
+        sampling = None
         baggage = {}
         if not isinstance(carrier, dict):
             raise TypeError('Carrier not a text map collection.')
@@ -52,11 +57,13 @@ class TextMapPropagator(propagator.Propagator):
                 trace_id = UUID(val)
             elif key == self._SPAN_ID:
                 span_id = UUID(val)
+            elif key == self._SAMPLE:
+                sampling = True if val == 'True' else False
             elif key.startswith(self._BAGGAGE_PREFIX):
                 baggage.update({self.strip_prefix(key): val})
         if trace_id is None or span_id is None:
             return None
-        return WavefrontSpanContext(trace_id, span_id, baggage)
+        return WavefrontSpanContext(trace_id, span_id, baggage, sampling)
 
     def strip_prefix(self, key):
         """

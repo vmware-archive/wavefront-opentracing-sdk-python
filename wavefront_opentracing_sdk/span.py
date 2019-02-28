@@ -5,7 +5,9 @@ Wavefront Span.
 """
 import threading
 import time
+import numbers
 from opentracing import Span
+from opentracing.ext.tags import SAMPLING_PRIORITY, ERROR
 from wavefront_sdk.common.utils import is_blank
 
 
@@ -32,7 +34,8 @@ class WavefrontSpan(Span):
         :type parents: list of uuid.UUID
         :param follows: List of UUIDs of follows span
         :type follows: list of uuid.UUID
-        :param tags:
+        :param tags: Tags of the span
+        :type tags: list of tuple
         """
         super(WavefrontSpan, self).__init__(tracer=tracer, context=context)
         self._context = context
@@ -41,9 +44,14 @@ class WavefrontSpan(Span):
         self.duration_time = 0
         self.parents = parents
         self.follows = follows
-        self.tags = tags
         self._finished = False
+        self._is_error = False
+        self._force_sampling = None
         self.update_lock = threading.Lock()
+        self.tags = []
+        for tag in tags:
+            if isinstance(tag, tuple):
+                self.set_tag(tag[0], tag[1])
 
     @property
     def context(self):
@@ -67,7 +75,21 @@ class WavefrontSpan(Span):
         """
         with self.update_lock:
             if not is_blank(key) and value:
-                self.tags.append((key, value))
+                self.tags.append((key, str(value)))
+                # allow span to be reported if sampling.priority is > 0.
+                if key is SAMPLING_PRIORITY and isinstance(value,
+                                                           numbers.Number):
+                    self._force_sampling = value > 0
+                    self._context = self._context.with_sampling_decision(
+                        self._force_sampling)
+                if key is ERROR:
+                    self._is_error = True
+                # allow span to be reported if error tag is set.
+                if not self._force_sampling and key is ERROR and isinstance(
+                        value, bool):
+                    force_sampling = True
+                    self._context = self._context.with_sampling_decision(
+                        force_sampling)
         return self
 
     def set_baggage_item(self, key, value):
@@ -134,7 +156,23 @@ class WavefrontSpan(Span):
                 return
             self.duration_time = duration_time
             self._finished = True
-        self.tracer.report_span(self)
+        # perform another sampling for duration based samplers
+        if not self._force_sampling and (
+                not self._context.is_sampled() or
+                not self._context.get_sampling_decision()):
+            if self.tracer.sample(
+                    self.operation_name,
+                    self.trace_id,
+                    duration_time):
+                self._context = self._context.with_sampling_decision(True)
+
+        # only report spans if the sampling decision allows it
+        if self._context.is_sampled() and \
+                self._context.get_sampling_decision():
+            self.tracer.report_span(self)
+        # irrespective of sampling, report wavefront-generated
+        # metrics/histograms to Wavefront
+        self.tracer.report_wavefront_generated_data(self)
 
     @property
     def trace_id(self):
@@ -241,3 +279,7 @@ class WavefrontSpan(Span):
             else:
                 tag_map[key].append(val)
         return tag_map
+
+    def is_error(self):
+        """Get if the span is error or not."""
+        return self._is_error

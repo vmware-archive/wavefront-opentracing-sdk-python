@@ -9,7 +9,7 @@ from opentracing import SpanContext
 class WavefrontSpanContext(SpanContext):
     """Wavefront Span Context."""
 
-    def __init__(self, trace_id, span_id, baggage=None):
+    def __init__(self, trace_id, span_id, baggage=None, decision=None):
         """
         Construct Wavefront Span Context.
 
@@ -19,10 +19,13 @@ class WavefrontSpanContext(SpanContext):
         :type span_id: uuid.UUID
         :param baggage: Baggage
         :type baggage: dict
+        :param decision: Decision of sampling
+        :type decision: bool
         """
         self.trace_id = trace_id
         self.span_id = span_id
         self._baggage = baggage or SpanContext.EMPTY_BAGGAGE
+        self._sampling_decision = decision
 
     @property
     def baggage(self):
@@ -52,7 +55,20 @@ class WavefrontSpanContext(SpanContext):
         """
         baggage = dict(self._baggage)
         baggage[key] = value
-        return WavefrontSpanContext(self.trace_id, self.span_id, baggage)
+        return WavefrontSpanContext(self.trace_id, self.span_id, baggage,
+                                    self._sampling_decision)
+
+    def with_sampling_decision(self, decision):
+        """
+        Create new span context with new decision of sampling.
+
+        :param decision: Decision of sampling
+        :type decision: bool
+        :return: Span context itself
+        :rtype: WavefrontSpanContext
+        """
+        return WavefrontSpanContext(self.trace_id, self.span_id, self.baggage,
+                                    decision)
 
     def get_trace_id(self):
         """
@@ -71,6 +87,14 @@ class WavefrontSpanContext(SpanContext):
         :rtype: uuid.UUID
         """
         return self.span_id
+
+    def is_sampled(self):
+        """Check sampling enabled or not."""
+        return self._sampling_decision is not None
+
+    def get_sampling_decision(self):
+        """Get decision of sampling."""
+        return self._sampling_decision
 
     @property
     def has_trace(self):
