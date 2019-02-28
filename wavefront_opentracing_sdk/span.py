@@ -44,14 +44,14 @@ class WavefrontSpan(Span):
         self.duration_time = 0
         self.parents = parents
         self.follows = follows
-        self.tags = []
-        for tag in tags:
-            if isinstance(tag, tuple):
-                self.set_tag(tag[0], tag[1])
         self._finished = False
         self._is_error = False
         self._force_sampling = None
         self.update_lock = threading.Lock()
+        self.tags = []
+        for tag in tags:
+            if isinstance(tag, tuple):
+                self.set_tag(tag[0], tag[1])
 
     @property
     def context(self):
