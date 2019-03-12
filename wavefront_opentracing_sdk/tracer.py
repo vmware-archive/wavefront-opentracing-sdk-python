@@ -336,8 +336,7 @@ class WavefrontTracer(opentracing.Tracer):
             components=[self.WAVEFRONT_GENERATED_COMPONENT,
                         self.OPENTRACING_COMPONENT,
                         self.PYTHON_COMPONENT],
-            source=wf_span_reporter.source,
-            reporting_interval_seconds=self.report_frequency_millis / 1000
+            source=wf_span_reporter.source
         )
         return wf_internal_reporter, heartbeater_service
 

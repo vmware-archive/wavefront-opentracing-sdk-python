@@ -5,6 +5,7 @@ Examples of Wavefront Opentracing Python SDK.
 """
 import time
 from opentracing import child_of, follows_from
+from wavefront_sdk.common.application_tags import ApplicationTags
 from wavefront_sdk import WavefrontDirectClient, WavefrontProxyClient
 from wavefront_opentracing_sdk import WavefrontTracer
 from wavefront_opentracing_sdk.reporting import CompositeReporter, \
@@ -12,10 +13,12 @@ from wavefront_opentracing_sdk.reporting import CompositeReporter, \
 
 # pylint: disable=invalid-name
 if __name__ == "__main__":
+    application_tag = ApplicationTags(application="example_app",
+                                      service="example_server")
     # Create Wavefront Span Reporter using Wavefront Direct Client.
     direct_client = WavefrontDirectClient(
-        server="http://localhost:8080",
-        token="9ea0d7c3-311a-419b-86b1-7a515f4aff76",
+        server="<SERVER_ADDR>",
+        token="<TOKEN>",
         max_queue_size=50000,
         batch_size=10000,
         flush_interval_seconds=5)
@@ -23,7 +26,7 @@ if __name__ == "__main__":
 
     # Create Wavefront Span Reporter using Wavefront Proxy Client.
     proxy_client = WavefrontProxyClient(
-        host="localhost",
+        host="<PROXY_HOST>",
         tracing_port=30000,
         distribution_port=40000,
         metrics_port=2878
@@ -36,7 +39,8 @@ if __name__ == "__main__":
         proxy_reporter, direct_reporter, ConsoleReporter())
 
     # Create Tracer with Composite Reporter.
-    tracer = WavefrontTracer(reporter=composite_reporter)
+    tracer = WavefrontTracer(reporter=composite_reporter,
+                             application_tags=application_tag)
 
     global_tags = [("global_key", "global_val")]
 
