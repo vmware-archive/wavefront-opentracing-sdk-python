@@ -1,37 +1,53 @@
+#!/usr/bin/env python3
 # coding: utf-8
 
+"""Wavefront Python SDK.
+
+This is a Wavefront Python SDK.
 """
-    Wavefront Python SDK
-    <p>This is a Wavefront Python SDK</p>  # noqa: E501
-"""
 
-from setuptools import setup, find_packages  # noqa: H301
+import os
 
-NAME = "wavefront-opentracing-sdk-python"
-VERSION = "1.0.0"
-# To install the library, run the following
-#
-# python setup.py install
-#
-# prerequisite: setuptools
-# http://pypi.python.org/pypi/setuptools
+import setuptools
 
-install_requires = ['opentracing>=2', 'wavefront-sdk-python>=1',
-                    'wavefront-pyformance>=0.9.3']
+with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                       'README.md')) as fd:
+    LONG_DESCRIPTION = fd.read()
 
-test_requires = ['mock>=2', 'freezegun>=0.3.11']
 
-setup(
-    name=NAME,
-    version=VERSION,
-    description="Wavefront Opentracing Python SDK",
-    author_email="songhao@vmware.com",
-    url="https://github.com/wavefrontHQ/wavefront-opentracing-sdk-python",
-    keywords=["Wavefront SDK", "Wavefront", "OpenTracing"],
-    install_requires=install_requires,
-    test_require=test_requires,
-    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
+setuptools.setup(
+    name='wavefront-opentracing-sdk-python',
+    version='1.1.0',
+    author='Wavefront by VMware',
+    author_email='chitimba@wavefront.com',
+    url='https://github.com/wavefrontHQ/wavefront-opentracing-sdk-python',
+    license='Apache-2.0',
+    description='Wavefront Opentracing Python SDK',
+    long_description=LONG_DESCRIPTION,
+    long_description_content_type='text/markdown',
+    keywords=[
+        'OpenTracing',
+        'OpenTracing SDK',
+        'Wavefront',
+        'Wavefront SDK',
+        ],
+    classifiers=[
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7'
+    ],
     include_package_data=True,
-    long_description="""\
-    """
+    packages=setuptools.find_packages(exclude=('*.tests', '*.tests.*',
+                                               'tests.*', 'tests')),
+    install_requires=[
+        'opentracing>=2',
+        'wavefront-sdk-python>=1',
+        'wavefront-pyformance>=0.9.3'
+        ],
+    test_require=[
+        'mock>=2',
+        'freezegun>=0.3.11'
+        ],
 )
