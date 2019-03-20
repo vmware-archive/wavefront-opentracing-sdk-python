@@ -16,8 +16,8 @@ VERSION = "1.0.0"
 # prerequisite: setuptools
 # http://pypi.python.org/pypi/setuptools
 
-install_requires = ['opentracing>=2', 'wavefront-sdk-python>=1',
-                    'wavefront-pyformance>=0.9.3']
+install_requires = ['opentracing>=2', 'wavefront-sdk-python>=1.1',
+                    'wavefront-pyformance>=0.9.4']
 
 test_requires = ['mock>=2', 'freezegun>=0.3.11']
 
