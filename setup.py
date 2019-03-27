@@ -42,12 +42,12 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=('*.tests', '*.tests.*',
                                                'tests.*', 'tests')),
     install_requires=[
-        'opentracing>=2',
-        'wavefront-sdk-python>=1',
-        'wavefront-pyformance>=0.9.3'
+        'opentracing>=2.0',
+        'wavefront-pyformance>=1.0',
+        'wavefront-sdk-python>=1.1',
         ],
     test_require=[
-        'mock>=2',
-        'freezegun>=0.3.11'
+        'freezegun>=0.3.11',
+        'mock>=2.0',
         ],
 )
