@@ -76,7 +76,7 @@ class WavefrontTracer(opentracing.Tracer):
             self.wf_internal_reporter = None
             self.heartbeater_service = None
 
-    # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
+    # pylint: disable=too-many-arguments,too-many-branches,too-many-locals
     def start_span(self, operation_name=None, child_of=None, references=None,
                    tags=None, start_time=None, ignore_active_span=False):
         r"""
@@ -319,9 +319,11 @@ class WavefrontTracer(opentracing.Tracer):
                           self.DURATION_SUFFIX),
             point_tags).add(span_duration_micros)
 
+    # pylint: disable=invalid-name
     def instantiate_wavefront_stats_reporter(self, wf_span_reporter,
                                              application_tags):
         """Instantiate WavefrontReporter and Heartbeater Service."""
+        # pylint: disable=fixme
         # TODO: this helper method should go in Tier 1 SDK
         wf_internal_reporter = wavefront_reporter.WavefrontReporter(
             source=wf_span_reporter.source,

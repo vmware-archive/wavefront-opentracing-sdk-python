@@ -12,7 +12,6 @@ reported.
 from . import sampler
 
 
-# pylint: disable=useless-object-inheritance
 class RateSampler(sampler.Sampler):
     """Tracing span rate sampler."""
 

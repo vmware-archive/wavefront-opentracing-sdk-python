@@ -9,7 +9,7 @@ from . import http
 from . import textmap
 
 
-# pylint: disable=useless-object-inheritance
+# pylint: disable=E0012,R0205
 class PropagatorRegistry(object):
     """Registry of available propagators."""
 

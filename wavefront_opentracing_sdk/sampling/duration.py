@@ -9,7 +9,6 @@ reported.
 from . import sampler
 
 
-# pylint: disable=useless-object-inheritance
 class DurationSampler(sampler.Sampler):
     """Tracing span duration sampler."""
 

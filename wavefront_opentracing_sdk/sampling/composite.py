@@ -10,7 +10,6 @@ The sampling decision is true if any of the delegate samplers allow the span.
 from . import sampler
 
 
-# pylint: disable=useless-object-inheritance
 class CompositeSampler(sampler.Sampler):
     """Tracing span composite sampler."""
 

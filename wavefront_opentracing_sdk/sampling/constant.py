@@ -8,7 +8,6 @@ Sampler that allows spans through at a constant rate (all in or all out).
 from . import sampler
 
 
-# pylint: disable=useless-object-inheritance
 class ConstantSampler(sampler.Sampler):
     """Tracing span constant sampler."""
 
