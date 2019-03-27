@@ -1,23 +1,21 @@
-"""
-Composite Reporter.
+"""Composite Reporter.
 
 @author: Hao Song (songhao@vmware.com)
 """
 from __future__ import absolute_import
-from wavefront_opentracing_sdk.reporting import reporter
+
+from . import reporter
 
 
 class CompositeReporter(reporter.Reporter):
-    """
-    Composite Reporter.
+    """Composite Reporter.
 
     Used to create multiple reporters, such as create a console
     reporter and Wavefront direct reporter at the same time.
     """
 
     def __init__(self, *reporters):
-        """
-        Construct composite reporter.
+        """Construct composite reporter.
 
         :param reporters: Reporters of composite reporter
         :type reporters: Reporter
@@ -26,8 +24,7 @@ class CompositeReporter(reporter.Reporter):
         self.reporters = reporters
 
     def report(self, wavefront_span):
-        """
-        Each reporter report data.
+        """Each reporter report data.
 
         :param wavefront_span: Wavefront span to be reported
         """
@@ -35,8 +32,7 @@ class CompositeReporter(reporter.Reporter):
             rep.report(wavefront_span)
 
     def get_failure_count(self):
-        """
-        Total failure count of all reporters.
+        """Total failure count of all reporters.
 
         :return: Total failure count
         :rtype: int

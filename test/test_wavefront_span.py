@@ -1,42 +1,46 @@
-"""
-Unit Tests for Wavefront Span.
+"""Unit Tests for Wavefront Span.
 
 @author: Hao Song (songhao@vmware.com)
 """
+import datetime
+import time
 import unittest
 import uuid
-import time
-import datetime
-from freezegun import freeze_time
+
+import freezegun
+
+import opentracing.ext.tags
+
 try:
     import mock
 except ImportError:
     from unittest import mock
-from opentracing.ext.tags import SAMPLING_PRIORITY, ERROR
-from wavefront_sdk.common import ApplicationTags
-from wavefront_opentracing_sdk import WavefrontTracer, WavefrontSpanContext
-from wavefront_opentracing_sdk.reporting import ConsoleReporter, \
-    WavefrontSpanReporter
+
+from wavefront_opentracing_sdk import WavefrontSpanContext
+from wavefront_opentracing_sdk import WavefrontTracer
+from wavefront_opentracing_sdk.reporting import ConsoleReporter
+from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
 from wavefront_opentracing_sdk.sampling import ConstantSampler
+
+import wavefront_sdk
 
 
 class TestSpan(unittest.TestCase):
     """Unit Tests for Wavefront Span."""
-    application_tags = ApplicationTags(application="app",
-                                       service="service",
-                                       cluster="us-west-1",
-                                       shard="primary",
-                                       custom_tags=[("custom_k", "custom_v")])
+
+    application_tags = wavefront_sdk.common.ApplicationTags(
+        application='app', service='service', cluster='us-west-1',
+        shard='primary', custom_tags=[('custom_k', 'custom_v')])
 
     def test_ignore_active_span(self):
         """Test Ignore Active Span."""
         tracer = WavefrontTracer(ConsoleReporter(), self.application_tags)
-        scope = tracer.start_active_span("test_op")
+        scope = tracer.start_active_span('test_op')
         active_span = scope.span
 
         # Span created with ignore_active_span=False by default.
         child_span = tracer.start_span(
-            operation_name="child_op",
+            operation_name='child_op',
             ignore_active_span=False)
         active_trace_id = str(active_span.trace_id)
         child_trace_id = str(child_span.trace_id)
@@ -45,7 +49,7 @@ class TestSpan(unittest.TestCase):
 
         # Span created with ignore_active_span=True.
         child_span = tracer.start_span(
-            operation_name="child_op",
+            operation_name='child_op',
             ignore_active_span=True)
         child_trace_id = str(child_span.trace_id)
         self.assertNotEqual(active_trace_id, child_trace_id)
@@ -57,20 +61,20 @@ class TestSpan(unittest.TestCase):
     def test_multi_valued_tags(self):
         """Test Multi-valued Tags."""
         tracer = WavefrontTracer(ConsoleReporter(), self.application_tags)
-        span = tracer.start_span("test_op", tags=[("key1", "val1"),
-                                                  ("key1", "val2")])
+        span = tracer.start_span('test_op', tags=[('key1', 'val1'),
+                                                  ('key1', 'val2')])
         self.assertIsNotNone(span)
         self.assertIsNotNone(span.get_tags())
         self.assertIsNotNone(span.get_tags_as_list())
         self.assertIsNotNone(span.get_tags_as_map())
         self.assertEqual(6, len(span.get_tags_as_map()))
-        self.assertTrue("app" in span.get_tags_as_map().get("application"))
-        self.assertTrue("service" in span.get_tags_as_map().get("service"))
-        self.assertTrue("us-west-1" in span.get_tags_as_map().get("cluster"))
-        self.assertTrue("primary" in span.get_tags_as_map().get("shard"))
-        self.assertTrue("custom_v" in span.get_tags_as_map().get("custom_k"))
-        self.assertTrue("val1" in span.get_tags_as_map().get("key1"))
-        self.assertTrue("val2" in span.get_tags_as_map().get("key1"))
+        self.assertTrue('app' in span.get_tags_as_map().get('application'))
+        self.assertTrue('service' in span.get_tags_as_map().get('service'))
+        self.assertTrue('us-west-1' in span.get_tags_as_map().get('cluster'))
+        self.assertTrue('primary' in span.get_tags_as_map().get('shard'))
+        self.assertTrue('custom_v' in span.get_tags_as_map().get('custom_k'))
+        self.assertTrue('val1' in span.get_tags_as_map().get('key1'))
+        self.assertTrue('val2' in span.get_tags_as_map().get('key1'))
         span.finish()
         tracer.close()
 
@@ -84,7 +88,7 @@ class TestSpan(unittest.TestCase):
         self.assertIsNotNone(span.context.get_sampling_decision())
         self.assertFalse(span.context.get_sampling_decision())
 
-        span.set_tag(SAMPLING_PRIORITY, 1)
+        span.set_tag(opentracing.ext.tags.SAMPLING_PRIORITY, 1)
         self.assertIsNotNone(span.context.get_sampling_decision())
         self.assertTrue(span.context.get_sampling_decision())
 
@@ -94,7 +98,7 @@ class TestSpan(unittest.TestCase):
         self.assertIsNotNone(span.context.get_sampling_decision())
         self.assertFalse(span.context.get_sampling_decision())
 
-        span.set_tag(ERROR, True)
+        span.set_tag(opentracing.ext.tags.ERROR, True)
         self.assertIsNotNone(span.context.get_sampling_decision())
         self.assertTrue(span.context.get_sampling_decision())
 
@@ -121,7 +125,7 @@ class TestSpan(unittest.TestCase):
         self.assertTrue(span.context.get_sampling_decision())
 
     def test_positive_child_sampling(self):
-        """Test child span with positive sampling"""
+        """Test child span with positive sampling."""
         tracer = WavefrontTracer(ConsoleReporter(), self.application_tags,
                                  samplers=[ConstantSampler(False)])
         parent_ctx = WavefrontSpanContext(trace_id=uuid.uuid1(),
@@ -136,7 +140,7 @@ class TestSpan(unittest.TestCase):
         self.assertTrue(span.context.get_sampling_decision())
 
     def test_negative_child_sampling(self):
-        """Test child span with positive sampling"""
+        """Test child span with positive sampling."""
         tracer = WavefrontTracer(ConsoleReporter(), self.application_tags,
                                  samplers=[ConstantSampler(True)])
         parent_ctx = WavefrontSpanContext(trace_id=uuid.uuid1(),
@@ -153,15 +157,15 @@ class TestSpan(unittest.TestCase):
     @mock.patch('wavefront_sdk.proxy.WavefrontProxyClient')
     def test_valid_wavefront_span(self, wf_sender):
         """Test wavefront generated data."""
-        operation_name = "dummy_op"
-        source = "wavefront_source"
+        operation_name = 'dummy_op'
+        source = 'wavefront_source'
         wf_sender = wf_sender()
         tracer = WavefrontTracer(WavefrontSpanReporter(wf_sender, source),
                                  self.application_tags,
                                  samplers=[ConstantSampler(True)],
                                  report_frequency_millis=500)
-        with freeze_time(datetime.datetime(year=1, month=1, day=1)) as \
-                frozen_datetime:
+        with freezegun.freeze_time(
+                datetime.datetime(year=1, month=1, day=1)) as frozen_datetime:
             span = tracer.start_active_span(operation_name)
             span.close()
             frozen_datetime.tick(delta=datetime.timedelta(seconds=61))

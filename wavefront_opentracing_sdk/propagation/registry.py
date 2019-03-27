@@ -1,10 +1,12 @@
-"""
-Propagator Registry.
+"""Propagator Registry.
 
 @author: Hao Song (songhao@vmware.com)
 """
-from opentracing.propagation import Format
-from wavefront_opentracing_sdk.propagation import textmap, http
+
+import opentracing
+
+from . import http
+from . import textmap
 
 
 # pylint: disable=useless-object-inheritance
@@ -13,8 +15,11 @@ class PropagatorRegistry(object):
 
     def __init__(self):
         """Construct propagator registry."""
-        self.propagators = {Format.TEXT_MAP: textmap.TextMapPropagator(),
-                            Format.HTTP_HEADERS: http.HTTPPropagator()}
+        self.propagators = {
+            opentracing.propagation.Format.TEXT_MAP:
+                textmap.TextMapPropagator(),
+            opentracing.propagation.Format.HTTP_HEADERS:
+                http.HTTPPropagator()}
 
     # pylint: disable=redefined-builtin
     def get(self, format):

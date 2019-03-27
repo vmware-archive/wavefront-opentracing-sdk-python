@@ -1,11 +1,12 @@
-"""
-Propagator Module.
+"""Propagator Module.
 
 @author: Hao Song (songhao@vmware.com)
 """
+from .http import HTTPPropagator
+from .registry import PropagatorRegistry
+from .textmap import TextMapPropagator
 
-from wavefront_opentracing_sdk.propagation.textmap \
-    import TextMapPropagator
-from wavefront_opentracing_sdk.propagation.http import HTTPPropagator
-from wavefront_opentracing_sdk.propagation.registry \
-    import PropagatorRegistry
+
+__all__ = ['HTTPPropagator',
+           'PropagatorRegistry',
+           'TextMapPropagator']

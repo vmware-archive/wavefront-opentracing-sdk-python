@@ -1,5 +1,4 @@
-"""
-Duration Sampler.
+"""Duration Sampler.
 
 Sampler that allows spans above a given duration in milliseconds to be
 reported.
@@ -7,23 +6,26 @@ reported.
 @author: Hao Song (songhao@vmware.com)
 """
 
-from wavefront_opentracing_sdk.sampling.sampler import Sampler
+from . import sampler
 
 
 # pylint: disable=useless-object-inheritance
-class DurationSampler(Sampler):
+class DurationSampler(sampler.Sampler):
     """Tracing span duration sampler."""
 
     def __init__(self, duration):
+        """Set up duration sampler."""
         self._duration = None
         self.set_duration(duration)
 
     def sample(self, operation_name, trace_id, duration):
+        """Perform sampling."""
         return duration > self._duration
 
     def is_early(self):
+        """Return False."""
         return False
 
     def set_duration(self, duration):
-        """Sets the duration for this sampler."""
+        """Set the duration for this sampler."""
         self._duration = duration

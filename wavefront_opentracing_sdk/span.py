@@ -1,25 +1,25 @@
-"""
-Wavefront Span.
+"""Wavefront Span.
 
 @author: Hao Song (songhao@vmware.com)
 """
+import numbers
 import threading
 import time
-import numbers
-from opentracing import Span
-from opentracing.ext.tags import SAMPLING_PRIORITY, ERROR
-from wavefront_sdk.common.utils import is_blank
+
+import opentracing
+import opentracing.ext.tags
+
+import wavefront_sdk.common.utils
 
 
 # pylint: disable=too-many-instance-attributes
-class WavefrontSpan(Span):
+class WavefrontSpan(opentracing.Span):
     """Wavefront Span."""
 
     # pylint: disable=too-many-arguments
     def __init__(self, tracer, operation_name, context, start_time, parents,
                  follows, tags):
-        """
-        Construct Wavefront Span.
+        """Construct Wavefront Span.
 
         :param tracer: Tracer that create this span
         :type tracer: wavefront_opentracing_python_sdk.WavefrontTracer
@@ -63,8 +63,7 @@ class WavefrontSpan(Span):
         return self._context
 
     def set_tag(self, key, value):
-        """
-        Set tag of span.
+        """Set tag of span.
 
         :param key: key of the tag
         :type key: str
@@ -74,27 +73,27 @@ class WavefrontSpan(Span):
         :rtype: WavefrontSpan
         """
         with self.update_lock:
-            if not is_blank(key) and value:
+            if not wavefront_sdk.common.utils.is_blank(key) and value:
                 self.tags.append((key, str(value)))
                 # allow span to be reported if sampling.priority is > 0.
-                if key is SAMPLING_PRIORITY and isinstance(value,
-                                                           numbers.Number):
+                if (key is opentracing.ext.tags.SAMPLING_PRIORITY
+                        and isinstance(value, numbers.Number)):
                     self._force_sampling = value > 0
                     self._context = self._context.with_sampling_decision(
                         self._force_sampling)
-                if key is ERROR:
+                if key is opentracing.ext.tags.ERROR:
                     self._is_error = True
                 # allow span to be reported if error tag is set.
-                if not self._force_sampling and key is ERROR and isinstance(
-                        value, bool):
+                if (not self._force_sampling
+                        and key is opentracing.ext.tags.ERROR
+                        and isinstance(value, bool)):
                     force_sampling = True
                     self._context = self._context.with_sampling_decision(
                         force_sampling)
         return self
 
     def set_baggage_item(self, key, value):
-        """
-        Replace span context with the updated dict of baggage.
+        """Replace span context with the updated dict of baggage.
 
         :param key: key of the baggage item
         :type key: str
@@ -109,8 +108,7 @@ class WavefrontSpan(Span):
         return self
 
     def get_baggage_item(self, key):
-        """
-        Get baggage item with given key.
+        """Get baggage item with given key.
 
         :param key: Key of baggage item
         :type key: str
@@ -120,8 +118,7 @@ class WavefrontSpan(Span):
         return self._context.get_baggage_item(key)
 
     def set_operation_name(self, operation_name):
-        """
-        Update operation name.
+        """Update operation name.
 
         :param operation_name: Operation Name
         :type operation_name: str
@@ -133,8 +130,7 @@ class WavefrontSpan(Span):
         return self
 
     def finish(self, finish_time=None):
-        """
-        Call finish to finish current span, and report it.
+        """Call finish to finish current span, and report it.
 
         :param finish_time: Finish time, unix timestamp
         :type finish_time: float
@@ -145,8 +141,7 @@ class WavefrontSpan(Span):
             self._do_finish(time.time() - self.start_time)
 
     def _do_finish(self, duration_time):
-        """
-        Mark span as finished and send it via reporter.
+        """Mark span as finished and send it via reporter.
 
         :param duration_time: Duration time in seconds
         :type duration_time: float
@@ -167,8 +162,8 @@ class WavefrontSpan(Span):
                 self._context = self._context.with_sampling_decision(True)
 
         # only report spans if the sampling decision allows it
-        if self._context.is_sampled() and \
-                self._context.get_sampling_decision():
+        if (self._context.is_sampled()
+                and self._context.get_sampling_decision()):
             self.tracer.report_span(self)
         # irrespective of sampling, report wavefront-generated
         # metrics/histograms to Wavefront
@@ -176,8 +171,7 @@ class WavefrontSpan(Span):
 
     @property
     def trace_id(self):
-        """
-        Get trace id.
+        """Get trace id.
 
         :return: Trace id
         :rtype: uuid.UUID
@@ -186,8 +180,7 @@ class WavefrontSpan(Span):
 
     @property
     def span_id(self):
-        """
-        Get span id.
+        """Get span id.
 
         :return: Span id
         :rtype: uuid.UUID
@@ -195,8 +188,7 @@ class WavefrontSpan(Span):
         return self._context.span_id
 
     def get_operation_name(self):
-        """
-        Get operation name.
+        """Get operation name.
 
         :return: Operation name.
         :rtype: str
@@ -204,8 +196,7 @@ class WavefrontSpan(Span):
         return self.operation_name
 
     def get_start_time(self):
-        """
-        Get span start time.
+        """Get span start time.
 
         :return: Span start time, unix timestamp.
         :rtype: float
@@ -213,8 +204,7 @@ class WavefrontSpan(Span):
         return self.start_time
 
     def get_duration_time(self):
-        """
-        Get span duration time.
+        """Get span duration time.
 
         :return: Span duration time in seconds.
         :rtype: float
@@ -222,8 +212,7 @@ class WavefrontSpan(Span):
         return self.duration_time
 
     def get_parents(self):
-        """
-        Get list of parents span's id.
+        """Get list of parents span's id.
 
         :return: list of parents span's id
         :rtype: list of uuid.UUID
@@ -233,8 +222,7 @@ class WavefrontSpan(Span):
         return self.parents
 
     def get_follows(self):
-        """
-        Get list of follows span's id.
+        """Get list of follows span's id.
 
         :return: list of follows span's id
         :rtype: list of uuid.UUID
@@ -244,8 +232,7 @@ class WavefrontSpan(Span):
         return self.follows
 
     def get_tags(self):
-        """
-        Get tags of span.
+        """Get tags of span.
 
         :return: list of tags
         :rtype: list of pair
@@ -255,8 +242,7 @@ class WavefrontSpan(Span):
         return self.tags
 
     def get_tags_as_list(self):
-        """
-        Get tags in list format.
+        """Get tags in list format.
 
         :return: list of tags
         :rtype: list of pair
@@ -264,8 +250,7 @@ class WavefrontSpan(Span):
         return self.get_tags()
 
     def get_tags_as_map(self):
-        """
-        Get tags in map format.
+        """Get tags in map format.
 
         :return: tags in map format: {key: [list_of_val]}
         :rtype: dict of {str : list}
