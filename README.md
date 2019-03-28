@@ -1,4 +1,10 @@
-# wavefront-opentracing-sdk-python [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-python.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-python) [![OpenTracing Badge](https://img.shields.io/badge/OpenTracing-enabled-blue.svg)](http://opentracing.io)
+# wavefront-opentracing-sdk-python
+
+[![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-python.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-python)
+[![OpenTracing Badge](https://img.shields.io/badge/OpenTracing-enabled-blue.svg)](http://opentracing.io)
+[![image](https://img.shields.io/pypi/v/wavefront-opentracing-sdk-python.svg)](https://pypi.org/project/wavefront-opentracing-sdk-python/)
+[![image](https://img.shields.io/pypi/l/wavefront-opentracing-sdk-python.svg)](https://pypi.org/project/wavefront-opentracing-sdk-python/)
+[![image](https://img.shields.io/pypi/pyversions/wavefront-opentracing-sdk-python.svg)](https://pypi.org/project/wavefront-opentracing-sdk-python/)
 
 The Wavefront by VMware OpenTracing SDK for Python is a library that provides open tracing support for Wavefront.
 
@@ -7,7 +13,7 @@ The Wavefront by VMware OpenTracing SDK for Python is a library that provides op
 Python 2.7+ and Python 3.x are supported.
 
 ```bash
-pip install wavefront-opentracing-sdk-python 
+pip install wavefront-opentracing-sdk-python
 ```
 ## Set Up a Tracer
 
@@ -28,7 +34,7 @@ tracer = WavefrontTracer(reporter=reporter, application_tags=application_tags)
 
 ### 1. Set Up Application Tags
 
-Application tags determine the metadata (span tags) that are included with every span reported to Wavefront. These tags enable you to filter and query trace data in Wavefront. 
+Application tags determine the metadata (span tags) that are included with every span reported to Wavefront. These tags enable you to filter and query trace data in Wavefront.
 
 You encapsulate application tags in an `ApplicationTags` object. See [Instantiating ApplicationTags](https://github.com/wavefrontHQ/wavefront-sdk-python/blob/master/docs/apptags.md) for details.
 
@@ -46,24 +52,24 @@ A "Wavefront sender" is an object that implements the low-level interface for se
 You must create a `WavefrontSpanReporter` to report trace data to Wavefront. You can optionally create a `CompositeReporter` to send data to Wavefront and to print to the console.
 
 #### Create a WavefrontSpanReporter
-To create a `WavefrontSpanReporter`: 
-* Specify the Wavefront sender from [Step 2](#2-set-up-a-wavefront-sender), i.e. either `WavefrontProxyClient` or `WavefrontDirectClient`. 
+To create a `WavefrontSpanReporter`:
+* Specify the Wavefront sender from [Step 2](#2-set-up-a-wavefront-sender), i.e. either `WavefrontProxyClient` or `WavefrontDirectClient`.
 * (Optional) Specify a string that represents the source for the reported spans. If you omit the source, the host name is automatically used.
 
 To create a `WavefrontSpanReporter`:
 
 ```python
+import wavefront_opentracing_sdk.reporting
 from wavefront_sdk import WavefrontDirectClient
   # or
   # from wavefront_sdk import WavefrontProxyClient
-from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
 
 wavefront_sender = ...   # see Step 2
 
-wf_span_reporter = WavefrontSpanReporter(
+wf_span_reporter = wavefront_opentracing_sdk.reporting.WavefrontSpanReporter(
     client=wavefront_sender,
-    source="wavefront-tracing-example"   # optional nondefault source name
-) 
+    source='wavefront-tracing-example'   # optional nondefault source name
+)
 
 # To get failures observed while reporting.
 total_failures = wf_span_reporter.get_failure_count()
@@ -75,13 +81,14 @@ You do not need to start the reporter explicitly.
 A `CompositeReporter` enables you to chain a `WavefrontSpanReporter` to another reporter, such as a `ConsoleReporter`. A console reporter is useful for debugging.
 
 ```PYTHON
+from wavefront_opentracing_sdk.reporting import CompositeReporter
+from wavefront_opentracing_sdk.reporting import ConsoleReporter
 from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
-from wavefront_opentracing_sdk.reporting import ConsoleReporter, CompositeReporter
 
-wf_span_reporter = ...   
+wf_span_reporter = ...
 
 # Create a console reporter that reports span to stdout
-console_reporter = ConsoleReporter(source="wavefront-tracing-example")
+console_reporter = ConsoleReporter(source='wavefront-tracing-example')
 
 # Instantiate a composite reporter composed of console and WavefrontSpanReporter.
 composite_reporter = CompositeReporter(wf_span_reporter, console_reporter)
@@ -91,19 +98,21 @@ composite_reporter = CompositeReporter(wf_span_reporter, console_reporter)
 To create a `WavefrontTracer`, you pass the `ApplicationTags` and `Reporter` instances you created in the previous steps:
 
 ```PYTHON
+import wavefront_opentracing_sdk
+
+from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
 from wavefront_sdk.common import ApplicationTags
-from wavefront_sdk import WavefrontDirectClient  
+from wavefront_sdk import WavefrontDirectClient
   # or
   # from wavefront_sdk import WavefrontProxyClient
-from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
-from wavefront_opentracing_sdk import WavefrontTracer
 
 application_tags = ...   # see Step 1 above
 wf_span_reporter = ...   # see Step 3 above
 
 # Construct Wavefront opentracing Tracer
-tracer = WavefrontTracer(reporter=wf_span_reporter,
-                         application_tags=application_tags) 
+tracer = wavefront_opentracing_sdk.WavefrontTracer(
+    reporter=wf_span_reporter,
+    application_tags=application_tags)
 ```
 
 #### Close the Tracer

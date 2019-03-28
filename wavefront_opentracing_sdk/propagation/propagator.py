@@ -5,7 +5,7 @@ Abstract Class of Propagator.
 """
 
 
-# pylint: disable=useless-object-inheritance
+# pylint: disable=E0012,R0205
 class Propagator(object):
     """Abstract Class of Propagator."""
 

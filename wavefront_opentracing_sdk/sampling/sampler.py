@@ -1,17 +1,16 @@
-"""
-Abstract Class of Sampler.
+"""Abstract Class of Sampler.
 
 @author: Hao Song (songhao@vmware.com)
 """
 
 
-# pylint: disable=useless-object-inheritance
+# pylint: disable=E0012,R0205
 class Sampler(object):
-    """Tracing span sampler."""
+    """Abstract tracing span sampler."""
 
     def sample(self, operation_name, trace_id, duration):
         """
-        Gets whether a span should be allowed given its operation and trace id.
+        Check if a span should be allowed given its operation and trace id.
 
         :param operation_name: The operation name of the span.
         :param trace_id: The trace_id of the span.

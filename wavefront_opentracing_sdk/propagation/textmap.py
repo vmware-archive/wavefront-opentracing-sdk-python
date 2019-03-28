@@ -3,19 +3,19 @@ TextMap Propagator.
 
 @author: Hao Song (songhao@vmware.com)
 """
-from uuid import UUID
+import uuid
 
-from wavefront_opentracing_sdk.propagation import propagator
-from wavefront_opentracing_sdk.span_context import WavefrontSpanContext
+from . import propagator
+from .. import span_context
 
 
 class TextMapPropagator(propagator.Propagator):
     """Propagate contexts within TextMaps."""
 
-    _BAGGAGE_PREFIX = "wf-ot-"
-    _TRACE_ID = _BAGGAGE_PREFIX + "traceid"
-    _SPAN_ID = _BAGGAGE_PREFIX + "spanid"
-    _SAMPLE = _BAGGAGE_PREFIX + "sample"
+    _BAGGAGE_PREFIX = 'wf-ot-'
+    _TRACE_ID = _BAGGAGE_PREFIX + 'traceid'
+    _SPAN_ID = _BAGGAGE_PREFIX + 'spanid'
+    _SAMPLE = _BAGGAGE_PREFIX + 'sample'
 
     def inject(self, span_context, carrier):
         """
@@ -26,6 +26,7 @@ class TextMapPropagator(propagator.Propagator):
         :param carrier: Carrier
         :type carrier: dict
         """
+        # pylint: disable=redefined-outer-name
         if not isinstance(carrier, dict):
             raise TypeError('Carrier not a text map collection.')
         carrier.update({self._TRACE_ID: str(span_context.get_trace_id())})
@@ -54,16 +55,17 @@ class TextMapPropagator(propagator.Propagator):
         for key, val in carrier.items():
             key = key.lower()
             if key == self._TRACE_ID:
-                trace_id = UUID(val)
+                trace_id = uuid.UUID(val)
             elif key == self._SPAN_ID:
-                span_id = UUID(val)
+                span_id = uuid.UUID(val)
             elif key == self._SAMPLE:
-                sampling = True if val == 'True' else False
+                sampling = bool(val == 'True')
             elif key.startswith(self._BAGGAGE_PREFIX):
                 baggage.update({self.strip_prefix(key): val})
         if trace_id is None or span_id is None:
             return None
-        return WavefrontSpanContext(trace_id, span_id, baggage, sampling)
+        return span_context.WavefrontSpanContext(trace_id, span_id, baggage,
+                                                 sampling)
 
     def strip_prefix(self, key):
         """

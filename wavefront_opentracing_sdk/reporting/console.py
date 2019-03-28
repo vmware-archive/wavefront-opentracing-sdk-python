@@ -1,12 +1,14 @@
-"""
-Console Reporter.
+"""Console Reporter.
 
 @author: Hao Song (songhao@vmware.com)
 """
 from __future__ import print_function
+
 import logging
-from wavefront_sdk.common.utils import tracing_span_to_line_data
-from wavefront_opentracing_sdk.reporting import reporter
+
+import wavefront_sdk.common.utils
+
+from ..reporting import reporter
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
@@ -19,24 +21,19 @@ class ConsoleReporter(reporter.Reporter):
     """
 
     def report(self, wavefront_span):
-        """
-        Print span data to console.
+        """Print span data to console.
 
         :param wavefront_span: Wavefront span to be reported
         """
-        line_data = tracing_span_to_line_data(
+        line_data = wavefront_sdk.common.utils.tracing_span_to_line_data(
             wavefront_span.get_operation_name(),
             int(wavefront_span.get_start_time() * 1000),
             int(wavefront_span.get_duration_time() * 1000),
-            self.source,
-            wavefront_span.trace_id,
-            wavefront_span.span_id,
-            wavefront_span.get_parents(),
-            wavefront_span.get_follows(),
-            wavefront_span.get_tags(),
-            span_logs=None,
-            default_source="unknown")
-        LOGGER.info("Finished span: sampling=%s %s",
+            self.source, wavefront_span.trace_id, wavefront_span.span_id,
+            wavefront_span.get_parents(), wavefront_span.get_follows(),
+            wavefront_span.get_tags(), span_logs=None,
+            default_source='unknown')
+        LOGGER.info('Finished span: sampling=%s %s',
                     wavefront_span.context.get_sampling_decision(),
                     line_data)
 
