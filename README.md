@@ -59,16 +59,16 @@ To create a `WavefrontSpanReporter`:
 To create a `WavefrontSpanReporter`:
 
 ```python
+import wavefront_opentracing_sdk.reporting
 from wavefront_sdk import WavefrontDirectClient
   # or
   # from wavefront_sdk import WavefrontProxyClient
-from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
 
 wavefront_sender = ...   # see Step 2
 
-wf_span_reporter = WavefrontSpanReporter(
+wf_span_reporter = wavefront_opentracing_sdk.reporting.WavefrontSpanReporter(
     client=wavefront_sender,
-    source="wavefront-tracing-example"   # optional nondefault source name
+    source='wavefront-tracing-example'   # optional nondefault source name
 )
 
 # To get failures observed while reporting.
@@ -81,13 +81,14 @@ You do not need to start the reporter explicitly.
 A `CompositeReporter` enables you to chain a `WavefrontSpanReporter` to another reporter, such as a `ConsoleReporter`. A console reporter is useful for debugging.
 
 ```PYTHON
+from wavefront_opentracing_sdk.reporting import CompositeReporter
+from wavefront_opentracing_sdk.reporting import ConsoleReporter
 from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
-from wavefront_opentracing_sdk.reporting import ConsoleReporter, CompositeReporter
 
 wf_span_reporter = ...
 
 # Create a console reporter that reports span to stdout
-console_reporter = ConsoleReporter(source="wavefront-tracing-example")
+console_reporter = ConsoleReporter(source='wavefront-tracing-example')
 
 # Instantiate a composite reporter composed of console and WavefrontSpanReporter.
 composite_reporter = CompositeReporter(wf_span_reporter, console_reporter)
@@ -97,19 +98,21 @@ composite_reporter = CompositeReporter(wf_span_reporter, console_reporter)
 To create a `WavefrontTracer`, you pass the `ApplicationTags` and `Reporter` instances you created in the previous steps:
 
 ```PYTHON
+import wavefront_opentracing_sdk
+
+from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
 from wavefront_sdk.common import ApplicationTags
 from wavefront_sdk import WavefrontDirectClient
   # or
   # from wavefront_sdk import WavefrontProxyClient
-from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
-from wavefront_opentracing_sdk import WavefrontTracer
 
 application_tags = ...   # see Step 1 above
 wf_span_reporter = ...   # see Step 3 above
 
 # Construct Wavefront opentracing Tracer
-tracer = WavefrontTracer(reporter=wf_span_reporter,
-                         application_tags=application_tags)
+tracer = wavefront_opentracing_sdk.WavefrontTracer(
+    reporter=wf_span_reporter,
+    application_tags=application_tags)
 ```
 
 #### Close the Tracer
