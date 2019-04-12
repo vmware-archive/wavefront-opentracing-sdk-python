@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # coding: utf-8
-
 """Wavefront Python SDK.
 
 This is a Wavefront Python SDK.
@@ -17,7 +16,7 @@ with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 setuptools.setup(
     name='wavefront-opentracing-sdk-python',
-    version='1.1.0',
+    version='1.1.1',
     author='Wavefront by VMware',
     author_email='chitimba@wavefront.com',
     url='https://github.com/wavefrontHQ/wavefront-opentracing-sdk-python',
