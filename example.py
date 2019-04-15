@@ -13,7 +13,6 @@ from wavefront_opentracing_sdk.reporting import ConsoleReporter
 from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
 
 import wavefront_sdk
-from wavefront_sdk import common
 
 
 # pylint: disable=invalid-name

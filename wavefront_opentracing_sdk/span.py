@@ -95,7 +95,7 @@ class WavefrontSpan(opentracing.Span):
         return self
 
     def log_kv(self, key_values, timestamp=None):
-        """Adds a log record to the span.
+        """Add a log record to the span.
 
         :param key_values: A dict of string keys and values of any type can be
         transferred to string by str()
