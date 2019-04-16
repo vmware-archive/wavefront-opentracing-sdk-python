@@ -65,7 +65,7 @@ if __name__ == '__main__':
         references=opentracing.child_of(span1.context),
         tags=[('span2_key', 'span2_val')]
     )
-    span2.log_kv({"foo": "bar"})
+    span2.log_kv({'foo': 'bar'})
     span3 = tracer.start_span(
         operation_name='span3',
         child_of=span1,

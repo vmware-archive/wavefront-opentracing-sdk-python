@@ -10,7 +10,7 @@ import opentracing
 import opentracing.ext.tags
 
 import wavefront_sdk.common.utils
-from wavefront_sdk.entities.tracing.span_log import SpanLog
+from wavefront_sdk.entities.tracing import span_log
 
 
 # pylint: disable=too-many-instance-attributes
@@ -107,13 +107,11 @@ class WavefrontSpan(opentracing.Span):
         :rtype: WavefrontSpan
         """
         if key_values:
-            fields = {}
-            for key in key_values:
-                fields[key] = str(key_values.get(key))
+            fields = {k: str(v) for k, v in key_values.items()}
             with self.update_lock:
-                self.logs.append(
-                    SpanLog(timestamp=timestamp or time.time() * 1000000,
-                            fields=fields))
+                self.logs.append(span_log.SpanLog(
+                    timestamp=timestamp or int(time.time() * 1E6),
+                    fields=fields))
 
     def set_baggage_item(self, key, value):
         """Replace span context with the updated dict of baggage.
@@ -270,9 +268,7 @@ class WavefrontSpan(opentracing.Span):
         :return: list of SpanLog
         :rtype: list of SpanLog
         """
-        if not self.logs:
-            return []
-        return self.logs
+        return self.logs or []
 
     def get_tags_as_list(self):
         """Get tags in list format.
