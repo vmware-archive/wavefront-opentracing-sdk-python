@@ -4,9 +4,9 @@
 """
 import logging
 try:
-    import queue
+    from queue import Queue, Full, Empty
 except ImportError:
-    import Queue as queue
+    from Queue import Queue, Full, Empty
 import random
 import socket
 import threading
@@ -40,7 +40,7 @@ class WavefrontSpanReporter(reporter.Reporter):
         self._stop = False
         self._max_queue_size = max_queue_size
         self._log_percent = log_percent
-        self._span_buffer = queue.Queue(maxsize=self._max_queue_size)
+        self._span_buffer = Queue(maxsize=self._max_queue_size)
         self._metrics_reporter = self._registry = self.span_received = \
             self.spans_dropped = self.report_errors = None
         super(WavefrontSpanReporter, self).__init__(source)
@@ -55,7 +55,7 @@ class WavefrontSpanReporter(reporter.Reporter):
             try:
                 wavefront_span = self._span_buffer.get(True, None)
                 self.send(wavefront_span)
-            except (AttributeError, TypeError, queue.Empty) as error:
+            except (AttributeError, TypeError, Empty) as error:
                 logging.error('Error processing buffer', error)
 
     def send(self, wavefront_span):
@@ -91,7 +91,7 @@ class WavefrontSpanReporter(reporter.Reporter):
             if self.span_received:
                 self.span_received.inc()
             self._span_buffer.put(wavefront_span)
-        except (AttributeError, TypeError, queue.Full):
+        except (AttributeError, TypeError, Full):
             if self.spans_dropped:
                 self.spans_dropped.inc()
             if self._logging_allowed():

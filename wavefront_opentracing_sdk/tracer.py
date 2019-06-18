@@ -327,7 +327,7 @@ class WavefrontTracer(opentracing.Tracer):
         # pylint: disable=fixme
         # TODO: this helper method should go in Tier 1 SDK
         wf_internal_reporter = wavefront_reporter.WavefrontReporter(
-            prefix="~sdk.python.opentracing",
+            prefix="~sdk.python.opentracing.",
             source=wf_span_reporter.source,
             registry=tagged_registry.TaggedRegistry(),
             reporting_interval=60,
