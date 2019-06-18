@@ -52,6 +52,9 @@ class WavefrontSpan(opentracing.Span):
         for tag in tags:
             if isinstance(tag, tuple):
                 self.set_tag(tag[0], tag[1])
+        self._spans_discarded = None if tracer.wf_internal_reporter is None \
+            else tracer.wf_internal_reporter.registry.\
+            counter("spans.discarded")
 
     @property
     def context(self):
@@ -165,6 +168,8 @@ class WavefrontSpan(opentracing.Span):
         if (self._context.is_sampled()
                 and self._context.get_sampling_decision()):
             self.tracer.report_span(self)
+        elif self._spans_discarded:
+            self._spans_discarded.inc()
         # irrespective of sampling, report wavefront-generated
         # metrics/histograms to Wavefront
         self.tracer.report_wavefront_generated_data(self)
