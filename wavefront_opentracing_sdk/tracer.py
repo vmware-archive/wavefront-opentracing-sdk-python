@@ -105,7 +105,7 @@ class WavefrontTracer(opentracing.Tracer):
         """
         parents = []
         follows = []
-        baggage = None
+        baggage = {}
         tags = tags or []
         tags.extend(self._tags)
         start_time = start_time or time.time()
@@ -132,10 +132,11 @@ class WavefrontTracer(opentracing.Tracer):
                         parent = reference_ctx
                     if reference.type == opentracing.ReferenceType.CHILD_OF:
                         parents.append(reference_ctx.get_span_id())
+                        baggage.update(reference_ctx.baggage)
                     elif (reference.type ==
                           opentracing.ReferenceType.FOLLOWS_FROM):
                         follows.append(reference_ctx.get_span_id())
-
+                        baggage.update(reference_ctx.baggage)
         if parent is None or not parent.has_trace:
             if not ignore_active_span and self.active_span is not None:
                 parents.append(self.active_span.span_id)
@@ -144,11 +145,11 @@ class WavefrontTracer(opentracing.Tracer):
             else:
                 trace_id = uuid.uuid1()
                 span_id = trace_id
-            if parent and parent.baggage:
-                baggage = dict(parent.baggage)
         else:
             trace_id = parent.trace_id
             span_id = uuid.uuid1()
+        if parent and parent.baggage:
+            baggage.update(dict(parent.baggage))
         sampling = None if parent is None else parent.get_sampling_decision()
         span_ctx = WavefrontSpanContext(trace_id, span_id, baggage, sampling)
         if not span_ctx.is_sampled():
