@@ -44,7 +44,8 @@ class WavefrontTracer(opentracing.Tracer):
 
     # pylint: disable=too-many-arguments
     def __init__(self, reporter, application_tags, global_tags=None,
-                 samplers=None, report_frequency_millis=1000):
+                 samplers=None, report_frequency_millis=1000,
+                 red_metrics_custom_tag_keys=None):
         """Construct Wavefront Tracer.
 
         :param reporter: Reporter
@@ -55,6 +56,8 @@ class WavefrontTracer(opentracing.Tracer):
         :type global_tags: list of pair
         :param samplers: Samplers for the tracer
         :type samplers: list of samplers
+        :type red_metrics_custom_tag_keys: Custom RED metrics tags.
+        :param red_metrics_custom_tag_keys: set of str
         """
         super(WavefrontTracer, self).__init__(
             opentracing.scope_managers.ThreadLocalScopeManager())
@@ -67,6 +70,9 @@ class WavefrontTracer(opentracing.Tracer):
             'tracing.derived.{0.application}.{0.service}.'.format(
                 application_tags))
         self.report_frequency_millis = report_frequency_millis
+        self.red_metrics_custom_tag_keys = None
+        if red_metrics_custom_tag_keys:
+            self.red_metrics_custom_tag_keys = set(red_metrics_custom_tag_keys)
         wf_span_reporter = self.get_wavefront_span_reporter(reporter)
         if wf_span_reporter is not None:
             self.wf_internal_reporter, self.heartbeater_service = (
@@ -292,6 +298,11 @@ class WavefrontTracer(opentracing.Tracer):
         # Need to sanitize metric name as application, service and operation
         # names can have spaces and other invalid metric name characters.
         point_tags = {self.OPERATION_NAME_TAG: span.get_operation_name()}
+        span_tags = span.get_tags_as_map()
+        if self.red_metrics_custom_tag_keys:
+            for key in self.red_metrics_custom_tag_keys:
+                if key in span_tags:
+                    point_tags.update({key: span_tags.get(key)[0]})
         self.wf_internal_reporter.registry.counter(
             self.sanitize(self.application_service_prefix +
                           span.get_operation_name() +
