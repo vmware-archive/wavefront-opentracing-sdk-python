@@ -10,6 +10,7 @@ import opentracing
 import opentracing.ext.tags
 
 import wavefront_sdk.common.utils
+from wavefront_sdk.entities.tracing import span_log
 
 
 # pylint: disable=too-many-instance-attributes
@@ -49,6 +50,7 @@ class WavefrontSpan(opentracing.Span):
         self._force_sampling = None
         self.update_lock = threading.Lock()
         self.tags = []
+        self.logs = []
         for tag in tags:
             if isinstance(tag, tuple):
                 self.set_tag(tag[0], tag[1])
@@ -91,6 +93,25 @@ class WavefrontSpan(opentracing.Span):
                     self._context = self._context.with_sampling_decision(
                         force_sampling)
         return self
+
+    def log_kv(self, key_values, timestamp=None):
+        """Add a log record to the span.
+
+        :param key_values: A dict of string keys and values of any type can be
+        transferred to string by str()
+        :type key_values: dict
+        :param timestamp: A unix timestamp per :meth:`time.time()`; current
+            time if ``None``
+        :type timestamp: float
+        :return: span itself
+        :rtype: WavefrontSpan
+        """
+        if key_values:
+            fields = {k: str(v) for k, v in key_values.items()}
+            with self.update_lock:
+                self.logs.append(span_log.SpanLog(
+                    timestamp=timestamp or int(time.time() * 1E6),
+                    fields=fields))
 
     def set_baggage_item(self, key, value):
         """Replace span context with the updated dict of baggage.
@@ -240,6 +261,14 @@ class WavefrontSpan(opentracing.Span):
         if not self.tags:
             return []
         return self.tags
+
+    def get_logs(self):
+        """Get logs of span.
+
+        :return: list of SpanLog
+        :rtype: list of SpanLog
+        """
+        return self.logs or []
 
     def get_tags_as_list(self):
         """Get tags in list format.
