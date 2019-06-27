@@ -106,7 +106,7 @@ class TestTracer(unittest.TestCase):
         tracer.close()
 
     def test_baggage_items(self):
-        """Test Baggage Items"""
+        """Test Baggage Items."""
         # Create parentCtx with baggage items
         tracer = WavefrontTracer(ConsoleReporter(), self.application_tags)
         baggage_item = {'foo': 'bar', 'user': 'name'}
