@@ -79,11 +79,11 @@ class WavefrontTracer(opentracing.Tracer):
                 heartbeater_service = self. \
                 instantiate_wavefront_stats_reporter(wf_span_reporter,
                                                      application_tags)
+            wf_span_reporter.set_metrics_reporter(self.wf_internal_reporter)
         else:
             self.wf_internal_reporter = None
             self.wf_derived_reporter = None
             self.heartbeater_service = None
-        wf_span_reporter.set_metrics_reporter(self.wf_internal_reporter)
 
     # pylint: disable=too-many-arguments,too-many-branches,too-many-locals
     def start_span(self, operation_name=None, child_of=None, references=None,
@@ -308,9 +308,8 @@ class WavefrontTracer(opentracing.Tracer):
             for key in self.red_metrics_custom_tag_keys:
                 if key in span_tags:
                     point_tags.update({key: span_tags.get(key)[0]})
-        self.wf_internal_reporter.registry.counter(
-            self.sanitize(self.application_service_prefix +
-                          span.get_operation_name() +
+        self.wf_derived_reporter.registry.counter(
+            self.sanitize(span.get_operation_name() +
                           self.INVOCATION_SUFFIX),
             point_tags).inc()
         if span.is_error():

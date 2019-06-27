@@ -133,7 +133,7 @@ class WavefrontSpanReporter(reporter.Reporter):
     def close(self):
         """Close the wavefront client."""
         self._stop = True
-        self.sending_thread.join(5000)
+        self.sending_thread.join(10)
         self.sender.close()
 
     def get_source(self):
