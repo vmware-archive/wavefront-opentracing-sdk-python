@@ -17,6 +17,7 @@ from wavefront_pyformance import wavefront_histogram
 from wavefront_pyformance import wavefront_reporter
 
 import wavefront_sdk.common
+from wavefront_sdk.common import constants
 
 from .propagation import registry
 from .reporting import CompositeReporter
@@ -66,9 +67,10 @@ class WavefrontTracer(opentracing.Tracer):
         self._tags.extend(application_tags.get_as_list())
         self._samplers = samplers
         self.registry = registry.PropagatorRegistry()
-        self.application_service_prefix = (
-            'tracing.derived.{0.application}.{0.service}.'.format(
-                application_tags))
+        self.single_valued_tag_keys = {constants.APPLICATION_TAG_KEY,
+                                       constants.SERVICE_TAG_KEY,
+                                       constants.CLUSTER_TAG_KEY,
+                                       constants.SHARD_TAG_KEY}
         self.report_frequency_millis = report_frequency_millis
         self.red_metrics_custom_tag_keys = None
         if red_metrics_custom_tag_keys:
@@ -116,7 +118,11 @@ class WavefrontTracer(opentracing.Tracer):
         follows = []
         baggage = {}
         tags = tags or []
-        tags.extend(self._tags)
+        span_tag_keys = {span_tag[0] for span_tag in tags}
+        for tag in self._tags:
+            if not (tag[0] in span_tag_keys and
+                    tag[0] in self.single_valued_tag_keys):
+                tags.append(tag)
         start_time = start_time or time.time()
 
         parent = None
@@ -309,26 +315,38 @@ class WavefrontTracer(opentracing.Tracer):
             for key in self.red_metrics_custom_tag_keys:
                 if key in span_tags:
                     point_tags.update({key: span_tags.get(key)[0]})
+        for key in self.single_valued_tag_keys:
+            if key in span_tags:
+                point_tags.update({key: span_tags.get(key)[0]})
+        application_service_prefix = (
+            'tracing.derived.{}.{}.'.format(
+                span_tags.get(constants.APPLICATION_TAG_KEY)[0],
+                span_tags.get(constants.SERVICE_TAG_KEY)[0]))
+
         self.wf_derived_reporter.registry.counter(
-            self.sanitize(span.get_operation_name() +
+            self.sanitize(application_service_prefix +
+                          span.get_operation_name() +
                           self.INVOCATION_SUFFIX),
             point_tags).inc()
         if span.is_error():
             self.wf_derived_reporter.registry.counter(
-                self.sanitize(span.get_operation_name() +
+                self.sanitize(application_service_prefix +
+                              span.get_operation_name() +
                               self.ERROR_SUFFIX),
                 point_tags).inc()
         # Convert from secs to millis and add to duration counter.
         span_duration_millis = span.get_duration_time() * 1000
         self.wf_derived_reporter.registry.counter(
-            self.sanitize(span.get_operation_name() +
+            self.sanitize(application_service_prefix +
+                          span.get_operation_name() +
                           self.TOTAL_TIME_SUFFIX),
             point_tags).inc(span_duration_millis)
         # Convert from millis to micros and add to histogram.
         span_duration_micros = span_duration_millis * 1000
         wavefront_histogram.wavefront_histogram(
             self.wf_derived_reporter.registry,
-            self.sanitize(span.get_operation_name() +
+            self.sanitize(application_service_prefix +
+                          span.get_operation_name() +
                           self.DURATION_SUFFIX),
             point_tags).add(span_duration_micros)
 
@@ -350,7 +368,6 @@ class WavefrontTracer(opentracing.Tracer):
         wf_internal_reporter.start()
 
         wf_derived_reporter = wavefront_reporter.WavefrontReporter(
-            prefix=self.application_service_prefix,
             source=wf_span_reporter.source,
             registry=tagged_registry.TaggedRegistry(),
             reporting_interval=self.report_frequency_millis / 1000,
