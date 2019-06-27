@@ -221,6 +221,83 @@ class TestSpan(unittest.TestCase):
                 timestamp=mock.ANY)
         ], any_order=True)
 
+    @mock.patch('wavefront_sdk.proxy.WavefrontProxyClient')
+    def test_custom_red_metrics_tags(self, wf_sender):
+        """Test custom RED metrics tags."""
+        operation_name = 'dummy_op'
+        source = 'wavefront_source'
+        wf_sender = wf_sender()
+        tracer = WavefrontTracer(WavefrontSpanReporter(wf_sender, source),
+                                 self.application_tags,
+                                 samplers=[ConstantSampler(True)],
+                                 report_frequency_millis=500,
+                                 red_metrics_custom_tag_keys={'env', 'tenant'})
+        with freezegun.freeze_time(
+                datetime.datetime(year=1, month=1, day=1)) as frozen_datetime:
+            span = tracer.start_active_span(operation_name=operation_name,
+                                            tags=[('tenant', 'tenant1'),
+                                                  ('env', 'staging')])
+            span.close()
+            frozen_datetime.tick(delta=datetime.timedelta(seconds=61))
+            time.sleep(1)
+            tracer.close()
+        wf_sender.assert_has_calls([
+            mock.call.send_span(
+                operation_name, mock.ANY, 0, source, mock.ANY, mock.ANY, [],
+                [], [('tenant', 'tenant1'),
+                     ('env', 'staging'),
+                     ('application', 'app'),
+                     ('service', 'service'),
+                     ('cluster', 'us-west-1'),
+                     ('shard', 'primary'),
+                     ('custom_k', 'custom_v')],
+                span_logs=None),
+            mock.call.send_metric(
+                name='tracing.derived.app.service.{}.invocation.'
+                     'count'.format(operation_name),
+                source=source,
+                tags={'application': 'app',
+                      'service': 'service',
+                      'cluster': 'us-west-1',
+                      'shard': 'primary',
+                      'custom_k': 'custom_v',
+                      'operationName': operation_name,
+                      'tenant': 'tenant1',
+                      'env': 'staging'},
+                timestamp=None, value=1),
+            mock.call.send_metric(
+                name='tracing.derived.app.service.{}.total_time.millis.'
+                     'count'.format(operation_name),
+                source=source,
+                tags={'application': 'app', 'service': 'service',
+                      'cluster': 'us-west-1', 'shard': 'primary',
+                      'custom_k': 'custom_v', 'operationName': 'dummy_op',
+                      'tenant': 'tenant1', 'env': 'staging'},
+                timestamp=None, value=mock.ANY),
+            mock.call.send_metric(
+                '~component.heartbeat', 1.0, mock.ANY,
+                source,
+                {'application': 'app',
+                 'cluster': 'us-west-1',
+                 'service': 'service', 'shard': 'primary',
+                 'component': 'wavefront-generated'}),
+            mock.call.send_distribution(
+                centroids=mock.ANY,
+                histogram_granularities={'!M'},
+                name='tracing.derived.app.service.{}.duration.'
+                     'micros'.format(operation_name),
+                source=source,
+                tags={'application': 'app',
+                      'service': 'service',
+                      'cluster': 'us-west-1',
+                      'shard': 'primary',
+                      'custom_k': 'custom_v',
+                      'operationName': operation_name,
+                      'tenant': 'tenant1',
+                      'env': 'staging'},
+                timestamp=mock.ANY)
+        ], any_order=True)
+
 
 if __name__ == '__main__':
     # run 'python -m unittest discover' from top-level to run tests

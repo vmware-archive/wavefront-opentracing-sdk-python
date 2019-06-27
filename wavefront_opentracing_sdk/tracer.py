@@ -44,7 +44,8 @@ class WavefrontTracer(opentracing.Tracer):
 
     # pylint: disable=too-many-arguments
     def __init__(self, reporter, application_tags, global_tags=None,
-                 samplers=None, report_frequency_millis=1000):
+                 samplers=None, report_frequency_millis=1000,
+                 red_metrics_custom_tag_keys=None):
         """Construct Wavefront Tracer.
 
         :param reporter: Reporter
@@ -55,6 +56,8 @@ class WavefrontTracer(opentracing.Tracer):
         :type global_tags: list of pair
         :param samplers: Samplers for the tracer
         :type samplers: list of samplers
+        :type red_metrics_custom_tag_keys: Custom RED metrics tags.
+        :param red_metrics_custom_tag_keys: set of str
         """
         super(WavefrontTracer, self).__init__(
             opentracing.scope_managers.ThreadLocalScopeManager())
@@ -67,13 +70,19 @@ class WavefrontTracer(opentracing.Tracer):
             'tracing.derived.{0.application}.{0.service}.'.format(
                 application_tags))
         self.report_frequency_millis = report_frequency_millis
+        self.red_metrics_custom_tag_keys = None
+        if red_metrics_custom_tag_keys:
+            self.red_metrics_custom_tag_keys = set(red_metrics_custom_tag_keys)
         wf_span_reporter = self.get_wavefront_span_reporter(reporter)
         if wf_span_reporter is not None:
-            self.wf_internal_reporter, self.heartbeater_service = (
-                self.instantiate_wavefront_stats_reporter(wf_span_reporter,
-                                                          application_tags))
+            self.wf_internal_reporter, self.wf_derived_reporter, self. \
+                heartbeater_service = self. \
+                instantiate_wavefront_stats_reporter(wf_span_reporter,
+                                                     application_tags)
+            wf_span_reporter.set_metrics_reporter(self.wf_internal_reporter)
         else:
             self.wf_internal_reporter = None
+            self.wf_derived_reporter = None
             self.heartbeater_service = None
 
     # pylint: disable=too-many-arguments,too-many-branches,too-many-locals
@@ -105,7 +114,7 @@ class WavefrontTracer(opentracing.Tracer):
         """
         parents = []
         follows = []
-        baggage = None
+        baggage = {}
         tags = tags or []
         tags.extend(self._tags)
         start_time = start_time or time.time()
@@ -132,10 +141,11 @@ class WavefrontTracer(opentracing.Tracer):
                         parent = reference_ctx
                     if reference.type == opentracing.ReferenceType.CHILD_OF:
                         parents.append(reference_ctx.get_span_id())
+                        baggage.update(reference_ctx.baggage)
                     elif (reference.type ==
                           opentracing.ReferenceType.FOLLOWS_FROM):
                         follows.append(reference_ctx.get_span_id())
-
+                        baggage.update(reference_ctx.baggage)
         if parent is None or not parent.has_trace:
             if not ignore_active_span and self.active_span is not None:
                 parents.append(self.active_span.span_id)
@@ -144,11 +154,11 @@ class WavefrontTracer(opentracing.Tracer):
             else:
                 trace_id = uuid.uuid1()
                 span_id = trace_id
-            if parent and parent.baggage:
-                baggage = dict(parent.baggage)
         else:
             trace_id = parent.trace_id
             span_id = uuid.uuid1()
+        if parent and parent.baggage:
+            baggage.update(dict(parent.baggage))
         sampling = None if parent is None else parent.get_sampling_decision()
         span_ctx = WavefrontSpanContext(trace_id, span_id, baggage, sampling)
         if not span_ctx.is_sampled():
@@ -254,6 +264,8 @@ class WavefrontTracer(opentracing.Tracer):
         self._reporter.close()
         if self.wf_internal_reporter is not None:
             self.wf_internal_reporter.stop()
+        if self.wf_derived_reporter is not None:
+            self.wf_derived_reporter.stop()
         if self.heartbeater_service is not None:
             self.heartbeater_service.close()
 
@@ -285,37 +297,38 @@ class WavefrontTracer(opentracing.Tracer):
 
     def report_wavefront_generated_data(self, span):
         """Report Wavefront generated data from spans."""
-        if self.wf_internal_reporter is None:
+        if self.wf_derived_reporter is None:
             # WavefrontSpanReporter not set, so no tracing spans will be
             # reported as metrics/histograms.
             return
         # Need to sanitize metric name as application, service and operation
         # names can have spaces and other invalid metric name characters.
         point_tags = {self.OPERATION_NAME_TAG: span.get_operation_name()}
-        self.wf_internal_reporter.registry.counter(
-            self.sanitize(self.application_service_prefix +
-                          span.get_operation_name() +
+        span_tags = span.get_tags_as_map()
+        if self.red_metrics_custom_tag_keys:
+            for key in self.red_metrics_custom_tag_keys:
+                if key in span_tags:
+                    point_tags.update({key: span_tags.get(key)[0]})
+        self.wf_derived_reporter.registry.counter(
+            self.sanitize(span.get_operation_name() +
                           self.INVOCATION_SUFFIX),
             point_tags).inc()
         if span.is_error():
-            self.wf_internal_reporter.registry.counter(
-                self.sanitize(self.application_service_prefix +
-                              span.get_operation_name() +
+            self.wf_derived_reporter.registry.counter(
+                self.sanitize(span.get_operation_name() +
                               self.ERROR_SUFFIX),
                 point_tags).inc()
         # Convert from secs to millis and add to duration counter.
         span_duration_millis = span.get_duration_time() * 1000
-        self.wf_internal_reporter.registry.counter(
-            self.sanitize(self.application_service_prefix +
-                          span.get_operation_name() +
+        self.wf_derived_reporter.registry.counter(
+            self.sanitize(span.get_operation_name() +
                           self.TOTAL_TIME_SUFFIX),
             point_tags).inc(span_duration_millis)
         # Convert from millis to micros and add to histogram.
         span_duration_micros = span_duration_millis * 1000
         wavefront_histogram.wavefront_histogram(
-            self.wf_internal_reporter.registry,
-            self.sanitize(self.application_service_prefix +
-                          span.get_operation_name() +
+            self.wf_derived_reporter.registry,
+            self.sanitize(span.get_operation_name() +
                           self.DURATION_SUFFIX),
             point_tags).add(span_duration_micros)
 
@@ -326,14 +339,27 @@ class WavefrontTracer(opentracing.Tracer):
         # pylint: disable=fixme
         # TODO: this helper method should go in Tier 1 SDK
         wf_internal_reporter = wavefront_reporter.WavefrontReporter(
+            prefix="~sdk.python.opentracing.",
+            source=wf_span_reporter.source,
+            registry=tagged_registry.TaggedRegistry(),
+            reporting_interval=60,
+            tags=dict(application_tags.get_as_list())
+        ).report_minute_distribution()
+        wf_internal_reporter.wavefront_client = (
+            wf_span_reporter.get_wavefront_sender())
+        wf_internal_reporter.start()
+
+        wf_derived_reporter = wavefront_reporter.WavefrontReporter(
+            prefix=self.application_service_prefix,
             source=wf_span_reporter.source,
             registry=tagged_registry.TaggedRegistry(),
             reporting_interval=self.report_frequency_millis / 1000,
             tags=dict(application_tags.get_as_list())
-            ).report_minute_distribution()
-        wf_internal_reporter.wavefront_client = (
+        ).report_minute_distribution()
+        wf_derived_reporter.wavefront_client = (
             wf_span_reporter.get_wavefront_sender())
-        wf_internal_reporter.start()
+        wf_derived_reporter.start()
+
         heartbeater_service = wavefront_sdk.common.HeartbeaterService(
             wavefront_client=wf_span_reporter.get_wavefront_sender(),
             application_tags=application_tags,
@@ -341,7 +367,7 @@ class WavefrontTracer(opentracing.Tracer):
                         self.OPENTRACING_COMPONENT,
                         self.PYTHON_COMPONENT],
             source=wf_span_reporter.source)
-        return wf_internal_reporter, heartbeater_service
+        return wf_internal_reporter, wf_derived_reporter, heartbeater_service
 
     @staticmethod
     def get_wavefront_span_reporter(reporter):
