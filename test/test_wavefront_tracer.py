@@ -3,9 +3,11 @@
 @author: Hao Song (songhao@vmware.com)
 """
 import unittest
+import uuid
 
 import opentracing
 
+from wavefront_opentracing_sdk import WavefrontSpanContext
 from wavefront_opentracing_sdk import WavefrontTracer
 from wavefront_opentracing_sdk.reporting import ConsoleReporter
 from wavefront_opentracing_sdk.sampling import ConstantSampler
@@ -102,6 +104,38 @@ class TestTracer(unittest.TestCase):
         self.assertTrue('val2' in span.get_tags_as_map().get('key1'))
         span.finish()
         tracer.close()
+
+    def test_baggage_items(self):
+        """Test Baggage Items."""
+        # Create parentCtx with baggage items
+        tracer = WavefrontTracer(ConsoleReporter(), self.application_tags)
+        baggage_item = {'foo': 'bar', 'user': 'name'}
+        parent_ctx = WavefrontSpanContext(trace_id=uuid.uuid1(),
+                                          span_id=uuid.uuid1(),
+                                          baggage=baggage_item,
+                                          decision=True)
+        span = tracer.start_span('test_op', child_of=parent_ctx)
+        self.assertEqual('bar', span.get_baggage_item('foo'))
+        self.assertEqual('name', span.get_baggage_item('user'))
+
+        # Parent and Follows
+        baggage_item = {'tracer': 'id', 'db.name': 'name'}
+        follows_ctx = WavefrontSpanContext(trace_id=uuid.uuid1(),
+                                           span_id=uuid.uuid1(),
+                                           baggage=baggage_item,
+                                           decision=True)
+        span = tracer.start_span(
+            'test_op', references=[opentracing.child_of(parent_ctx),
+                                   opentracing.child_of(follows_ctx)])
+        self.assertEqual('bar', span.get_baggage_item('foo'))
+        self.assertEqual('name', span.get_baggage_item('user'))
+        self.assertEqual('id', span.get_baggage_item('tracer'))
+        self.assertEqual('name', span.get_baggage_item('db.name'))
+
+        # Validate root span
+        span = tracer.start_span('test_op')
+        self.assertIsNotNone(span.context.baggage)
+        self.assertTrue(not bool(span.context.baggage))
 
 
 if __name__ == '__main__':
