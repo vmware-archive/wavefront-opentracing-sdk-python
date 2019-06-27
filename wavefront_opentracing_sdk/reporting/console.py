@@ -31,11 +31,16 @@ class ConsoleReporter(reporter.Reporter):
             int(wavefront_span.get_duration_time() * 1000),
             self.source, wavefront_span.trace_id, wavefront_span.span_id,
             wavefront_span.get_parents(), wavefront_span.get_follows(),
-            wavefront_span.get_tags(), span_logs=None,
+            wavefront_span.get_tags(), span_logs=wavefront_span.get_logs(),
             default_source='unknown')
         LOGGER.info('Finished span: sampling=%s %s',
                     wavefront_span.context.get_sampling_decision(),
                     line_data)
+        if wavefront_span.get_logs():
+            span_log_data = wavefront_sdk.common.utils.span_log_to_line_data(
+                wavefront_span.trace_id, wavefront_span.span_id,
+                wavefront_span.get_logs())
+            LOGGER.info('Span Log: %s', span_log_data)
 
     def get_failure_count(self):
         """No-op."""
