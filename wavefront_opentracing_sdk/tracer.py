@@ -12,11 +12,11 @@ import uuid
 import opentracing
 import opentracing.scope_managers
 
+import wavefront_sdk.common
+
 from wavefront_pyformance import tagged_registry
 from wavefront_pyformance import wavefront_histogram
 from wavefront_pyformance import wavefront_reporter
-
-import wavefront_sdk.common
 
 from .propagation import registry
 from .reporting import CompositeReporter

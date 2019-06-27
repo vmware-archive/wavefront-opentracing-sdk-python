@@ -16,6 +16,7 @@ from pyformance import meters
 from . import reporter
 
 
+# pylint: disable=too-many-instance-attributes
 class WavefrontSpanReporter(reporter.Reporter):
     """Wavefront Span Reporter."""
 
@@ -55,8 +56,8 @@ class WavefrontSpanReporter(reporter.Reporter):
             try:
                 wavefront_span = self._span_buffer.get(True, None)
                 self.send(wavefront_span)
-            except (AttributeError, TypeError, Empty) as error:
-                logging.error('Error processing buffer', error)
+            except (AttributeError, TypeError, Empty):
+                logging.error('Error processing buffer.')
 
     def send(self, wavefront_span):
         """Report span data via Wavefront Client.
@@ -71,13 +72,13 @@ class WavefrontSpanReporter(reporter.Reporter):
                 wavefront_span.trace_id, wavefront_span.span_id,
                 wavefront_span.get_parents(), wavefront_span.get_follows(),
                 wavefront_span.get_tags(), span_logs=None)
-        except (AttributeError, TypeError) as error:
+        except (AttributeError, TypeError):
             if self.report_errors:
                 self.report_errors.inc()
             if self.spans_dropped:
                 self.spans_dropped.inc()
             if self._logging_allowed():
-                logging.error('Error reporting spans', error)
+                logging.error('Error reporting spans.')
 
     def _logging_allowed(self):
         return random.uniform(0, 1) <= self._log_percent
@@ -95,9 +96,11 @@ class WavefrontSpanReporter(reporter.Reporter):
             if self.spans_dropped:
                 self.spans_dropped.inc()
             if self._logging_allowed():
-                logging.error('Buffer full, dropping span: ', wavefront_span)
+                logging.error('Buffer full, dropping span: %s, %s',
+                              wavefront_span.get_operation_name(),
+                              wavefront_span.span_id)
                 if self.spans_dropped:
-                    logging.warning('Total spans dropped: ',
+                    logging.warning('Total spans dropped: %d',
                                     self.spans_dropped.get_count())
 
     def set_metrics_reporter(self, wavefront_reporter):
@@ -141,6 +144,7 @@ class WavefrontSpanReporter(reporter.Reporter):
         """Get the Wavefront Sender."""
         return self.sender
 
+    # pylint: disable=too-few-public-methods
     class CustomGauge(meters.Gauge):
         """Custom Gauge for monitoring span buffer queue."""
 
