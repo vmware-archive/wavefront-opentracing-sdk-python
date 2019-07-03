@@ -41,6 +41,7 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=('*.tests', '*.tests.*',
                                                'tests.*', 'tests')),
     install_requires=[
+        'future>=0.17.1'
         'opentracing>=2.0',
         'wavefront-pyformance>=1.0',
         'wavefront-sdk-python>=1.2',

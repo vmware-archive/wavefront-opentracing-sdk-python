@@ -172,7 +172,7 @@ class WavefrontTracer(opentracing.Tracer):
             # inherited from a parent span. perform head based sampling as no
             # sampling decision has been obtained for this span yet.
             decision = self.sample(operation_name,
-                                   self.get_least_significant_bits(trace_id),
+                                   get_least_significant_bits(trace_id),
                                    0)
             span_ctx = span_ctx.with_sampling_decision(decision)
         return WavefrontSpan(self, operation_name, span_ctx, start_time,
@@ -290,7 +290,7 @@ class WavefrontTracer(opentracing.Tracer):
             do_sample = early_sampling == sampler.is_early()
             if do_sample and sampler.sample(
                     operation_name,
-                    self.get_least_significant_bits(trace_id),
+                    get_least_significant_bits(trace_id),
                     duration):
                 if LOGGER.isEnabledFor(logging.DEBUG):
                     LOGGER.debug('%s=true op=%s', sampler.__class__.__name__,
@@ -409,11 +409,20 @@ class WavefrontTracer(opentracing.Tracer):
             return re.sub(r'[\"]+', '\\\\\"', whitespace_sanitized)
         return whitespace_sanitized
 
-    @staticmethod
-    def get_least_significant_bits(uuid_val):
-        """Equivalent to getLeastSignificantBits() in Java."""
-        lsb_s = ''.join(str(uuid_val).split('-')[-2:])
-        lsb = int(lsb_s, 16)
-        if int(lsb_s[0], 16) > 7:
-            lsb = lsb - 0x10000000000000000
-        return lsb
+
+def get_least_significant_bits(uuid_val):
+    """Equivalent to getLeastSignificantBits() in Java."""
+    lsb_s = ''.join(str(uuid_val).split('-')[-2:])
+    lsb = int(lsb_s, 16)
+    if int(lsb_s[0], 16) > 7:
+        lsb = lsb - 0x10000000000000000
+    return lsb
+
+
+def get_most_significant_bits(uuid_val):
+    """Equivalent to getMostSignificantBits() in Java."""
+    msb_s = ''.join(str(uuid_val).split('-')[:3])
+    msb = int(msb_s, 16)
+    if int(msb_s[0], 16) > 7:
+        msb = msb - 0x10000000000000000
+    return msb

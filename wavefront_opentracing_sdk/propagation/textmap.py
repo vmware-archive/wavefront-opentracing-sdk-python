@@ -61,19 +61,22 @@ class TextMapPropagator(propagator.Propagator):
             elif key == self._SAMPLE:
                 sampling = bool(val == 'True')
             elif key.startswith(self._BAGGAGE_PREFIX):
-                baggage.update({self.strip_prefix(key): val})
+                baggage.update({strip_prefix(self._BAGGAGE_PREFIX, key): val})
         if trace_id is None or span_id is None:
             return None
         return span_context.WavefrontSpanContext(trace_id, span_id, baggage,
                                                  sampling)
 
-    def strip_prefix(self, key):
-        """
-        Strip the prefix of baggage items.
 
-        :param key: Baggage item to be striped
-        :type key: str
-        :return: Striped baggage item
-        :rtype: str
-        """
-        return key[len(self._BAGGAGE_PREFIX):]
+def strip_prefix(prefix, key):
+    """
+    Strip the prefix of baggage items.
+
+    :param prefix: Prefix to be stripped.
+    :type prefix: str
+    :param key: Baggage item to be striped
+    :type key: str
+    :return: Striped baggage item
+    :rtype: str
+    """
+    return key[len(prefix):]
