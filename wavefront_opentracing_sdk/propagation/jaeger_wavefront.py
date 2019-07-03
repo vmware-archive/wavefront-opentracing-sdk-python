@@ -51,21 +51,21 @@ class JaegerWavefrontPropagator(propagator.Propagator):
             return None
         return header
 
-    def context_to_trace_id_header(self, span_context):
+    def context_to_trace_id_header(self, span_ctx):
         """Extract traceId and spanId from a WavefrontSpanContext.
 
         And constructs a Jaeger client compatible header of the form
         traceId:spanId:parentId:samplingDecision.
 
-        :param span_context: Wavefront Span Context to be injected
-        :type span_context: WavefrontSpanContext
+        :param span_ctx: Wavefront Span Context to be injected
+        :type span_ctx: WavefrontSpanContext
         :return: formatted header as string
         :rtype: str
         """
-        trace_id = format(span_context.get_trace_id().int, 'x')
-        span_id = format(span_context.get_span_id().int, 'x')
-        sampling_decision = span_context.get_sampling_decision()
-        parent_id = span_context.get_baggage_item(self._PARENT_ID_KEY)
+        trace_id = format(span_ctx.get_trace_id().int, 'x')
+        span_id = format(span_ctx.get_span_id().int, 'x')
+        sampling_decision = span_ctx.get_sampling_decision()
+        parent_id = span_ctx.get_baggage_item(self._PARENT_ID_KEY)
         if not parent_id:
             parent_id = 'null'
         if not sampling_decision:
@@ -74,17 +74,17 @@ class JaegerWavefrontPropagator(propagator.Propagator):
                                     '1' if sampling_decision else '0')
 
     @staticmethod
-    def convert_to_uuid(id):
+    def convert_to_uuid(hex_id):
         """Construct UUID for traceId/spanId represented as hexString.
 
         Consisting of (low + high) 64 bits.
 
-        :param id: hexString form of traceId/spanId
-        :type id: str
+        :param hex_id: hexString form of traceId/spanId
+        :type hex_id: str
         :return: UUID for traceId/spanId as expected by WavefrontSpanContext
         :rtype: uuid.UUID
         """
-        id_low = int(id, 16)
+        id_low = int(hex_id, 16)
         return uuid.UUID(int=id_low)
 
     def inject(self, span_context, carrier):
@@ -122,7 +122,7 @@ class JaegerWavefrontPropagator(propagator.Propagator):
         sampling_decision = None
         baggage = {}
         if not isinstance(carrier, dict):
-            raise TypeError('Carrier not a text map collection.')
+            raise TypeError('Carrier is not a text map collection.')
         for key, val in carrier.items():
             key = key.lower()
             if key == self.trace_id_header:
@@ -137,8 +137,7 @@ class JaegerWavefrontPropagator(propagator.Propagator):
                 baggage.update({strip_prefix(self._BAGGAGE_PREFIX, key): val})
         if trace_id is None or span_id is None:
             return None
-        if parent_id and len(parent_id) > 0 and \
-                parent_id.lower() != 'null':
+        if parent_id and parent_id.lower() != 'null':
             baggage.update({self._PARENT_ID_KEY: parent_id})
         return span_context.WavefrontSpanContext(trace_id, span_id, baggage,
                                                  sampling_decision)
