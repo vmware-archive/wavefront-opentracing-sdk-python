@@ -37,7 +37,7 @@ class WavefrontSpanContext(opentracing.SpanContext):
         :return: Baggage value
         :rtype: str
         """
-        return self._baggage[key] if key in self._baggage else None
+        return self._baggage.get(key)
 
     def with_baggage_item(self, key, value):
         """Create new span context with new dict of baggage and append item.
