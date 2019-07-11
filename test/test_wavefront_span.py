@@ -61,14 +61,15 @@ class TestSpan(unittest.TestCase):
     def test_multi_valued_tags(self):
         """Test Multi-valued Tags."""
         tracer = WavefrontTracer(ConsoleReporter(), self.application_tags)
-        span = tracer.start_span('test_op', tags=[('key1', 'val1'),
-                                                  ('key1', 'val2')])
+        span = tracer.start_span('test_op', tags=[
+            ('key1', 'val1'), ('key1', 'val2'),
+            ('application', 'new_app')])
         self.assertIsNotNone(span)
         self.assertIsNotNone(span.get_tags())
         self.assertIsNotNone(span.get_tags_as_list())
         self.assertIsNotNone(span.get_tags_as_map())
         self.assertEqual(6, len(span.get_tags_as_map()))
-        self.assertTrue('app' in span.get_tags_as_map().get('application'))
+        self.assertTrue('new_app' in span.get_tags_as_map().get('application'))
         self.assertTrue('service' in span.get_tags_as_map().get('service'))
         self.assertTrue('us-west-1' in span.get_tags_as_map().get('cluster'))
         self.assertTrue('primary' in span.get_tags_as_map().get('shard'))
@@ -166,7 +167,8 @@ class TestSpan(unittest.TestCase):
                                  report_frequency_millis=500)
         with freezegun.freeze_time(
                 datetime.datetime(year=1, month=1, day=1)) as frozen_datetime:
-            span = tracer.start_active_span(operation_name)
+            span = tracer.start_active_span(operation_name,
+                                            tags=[('application', 'new_app')])
             span.close()
             frozen_datetime.tick(delta=datetime.timedelta(seconds=61))
             time.sleep(1)
@@ -174,17 +176,17 @@ class TestSpan(unittest.TestCase):
         wf_sender.assert_has_calls([
             mock.call.send_span(
                 operation_name, mock.ANY, 0, source, mock.ANY, mock.ANY, [],
-                [], [('application', 'app'),
+                [], [('application', 'new_app'),
                      ('service', 'service'),
                      ('cluster', 'us-west-1'),
                      ('shard', 'primary'),
                      ('custom_k', 'custom_v')],
                 span_logs=None),
             mock.call.send_metric(
-                name='tracing.derived.app.service.{}.invocation.'
+                name='tracing.derived.new_app.service.{}.invocation.'
                      'count'.format(operation_name),
                 source=source,
-                tags={'application': 'app',
+                tags={'application': 'new_app',
                       'service': 'service',
                       'cluster': 'us-west-1',
                       'shard': 'primary',
@@ -192,10 +194,10 @@ class TestSpan(unittest.TestCase):
                       'operationName': operation_name},
                 timestamp=None, value=1),
             mock.call.send_metric(
-                name='tracing.derived.app.service.{}.total_time.millis.'
+                name='tracing.derived.new_app.service.{}.total_time.millis.'
                      'count'.format(operation_name),
                 source=source,
-                tags={'application': 'app', 'service': 'service',
+                tags={'application': 'new_app', 'service': 'service',
                       'cluster': 'us-west-1', 'shard': 'primary',
                       'custom_k': 'custom_v', 'operationName': 'dummy_op'},
                 timestamp=None, value=mock.ANY),
@@ -209,10 +211,10 @@ class TestSpan(unittest.TestCase):
             mock.call.send_distribution(
                 centroids=mock.ANY,
                 histogram_granularities={'!M'},
-                name='tracing.derived.app.service.{}.duration.'
+                name='tracing.derived.new_app.service.{}.duration.'
                      'micros'.format(operation_name),
                 source=source,
-                tags={'application': 'app',
+                tags={'application': 'new_app',
                       'service': 'service',
                       'cluster': 'us-west-1',
                       'shard': 'primary',
