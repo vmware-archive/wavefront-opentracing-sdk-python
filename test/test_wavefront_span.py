@@ -181,7 +181,7 @@ class TestSpan(unittest.TestCase):
                      ('cluster', 'us-west-1'),
                      ('shard', 'primary'),
                      ('custom_k', 'custom_v')],
-                span_logs=None),
+                span_logs=[]),
             mock.call.send_metric(
                 name='tracing.derived.new_app.service.{}.invocation.'
                      'count'.format(operation_name),

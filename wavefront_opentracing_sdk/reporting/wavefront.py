@@ -71,7 +71,7 @@ class WavefrontSpanReporter(reporter.Reporter):
                 int(wavefront_span.get_duration_time() * 1000), self.source,
                 wavefront_span.trace_id, wavefront_span.span_id,
                 wavefront_span.get_parents(), wavefront_span.get_follows(),
-                wavefront_span.get_tags(), span_logs=None)
+                wavefront_span.get_tags(), span_logs=wavefront_span.get_logs())
         except (AttributeError, TypeError):
             if self.report_errors:
                 self.report_errors.inc()
