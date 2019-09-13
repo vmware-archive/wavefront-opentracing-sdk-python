@@ -45,7 +45,7 @@ class WavefrontTracer(opentracing.Tracer):
 
     # pylint: disable=too-many-arguments
     def __init__(self, reporter, application_tags, global_tags=None,
-                 samplers=None, report_frequency_millis=1000,
+                 samplers=None, report_frequency_millis=60000,
                  red_metrics_custom_tag_keys=None):
         """Construct Wavefront Tracer.
 
