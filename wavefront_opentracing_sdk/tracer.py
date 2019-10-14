@@ -309,7 +309,8 @@ class WavefrontTracer(opentracing.Tracer):
             return
         # Need to sanitize metric name as application, service and operation
         # names can have spaces and other invalid metric name characters.
-        point_tags = {self.OPERATION_NAME_TAG: span.get_operation_name()}
+        point_tags = HashableDict()
+        point_tags.update({self.OPERATION_NAME_TAG: span.get_operation_name()})
         span_tags = span.get_tags_as_map()
         custom_tag_match = False
 
@@ -433,3 +434,11 @@ def get_most_significant_bits(uuid_val):
     if int(msb_s[0], 16) > 7:
         msb = msb - 0x10000000000000000
     return msb
+
+
+class HashableDict(dict):
+    """Hashable Dict."""
+
+    def __hash__(self):
+        """Hash of the dict."""
+        return hash(tuple(sorted(self.items())))

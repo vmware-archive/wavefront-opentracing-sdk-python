@@ -4,7 +4,6 @@ Jaeger Wavefront Propagator.
 @author: Hao Song (songhao@vmware.com)
 """
 import uuid
-from builtins import int
 
 from wavefront_opentracing_sdk.propagation.textmap import strip_prefix
 

@@ -207,6 +207,7 @@ class TestSpan(unittest.TestCase):
                 {'application': 'app',
                  'cluster': 'us-west-1',
                  'service': 'service', 'shard': 'primary',
+                 'custom_k': 'custom_v',
                  'component': 'wavefront-generated'}),
             mock.call.send_distribution(
                 centroids=mock.ANY,
@@ -282,6 +283,7 @@ class TestSpan(unittest.TestCase):
                 {'application': 'app',
                  'cluster': 'us-west-1',
                  'service': 'service', 'shard': 'primary',
+                 'custom_k': 'custom_v',
                  'component': 'wavefront-generated'}),
             mock.call.send_distribution(
                 centroids=mock.ANY,
