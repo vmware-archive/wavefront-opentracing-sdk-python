@@ -311,13 +311,20 @@ class WavefrontTracer(opentracing.Tracer):
         # names can have spaces and other invalid metric name characters.
         point_tags = {self.OPERATION_NAME_TAG: span.get_operation_name()}
         span_tags = span.get_tags_as_map()
+        custom_tag_match = False
+
         if self.red_metrics_custom_tag_keys:
             for key in self.red_metrics_custom_tag_keys:
                 if key in span_tags:
+                    custom_tag_match = True
                     point_tags.update({key: span_tags.get(key)[0]})
         for key in self.single_valued_tag_keys:
             if key in span_tags:
                 point_tags.update({key: span_tags.get(key)[0]})
+
+        if custom_tag_match and self.heartbeater_service:
+            self.heartbeater_service.report_custom_tags(point_tags)
+
         application_service_prefix = (
             'tracing.derived.{}.{}.'.format(
                 span_tags.get(constants.APPLICATION_TAG_KEY)[0],
