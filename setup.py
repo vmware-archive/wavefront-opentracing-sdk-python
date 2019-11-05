@@ -16,7 +16,7 @@ with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 setuptools.setup(
     name='wavefront-opentracing-sdk-python',
-    version='1.2.5',
+    version='1.2.6',
     author='Wavefront by VMware',
     author_email='chitimba@wavefront.com',
     url='https://github.com/wavefrontHQ/wavefront-opentracing-sdk-python',
@@ -43,7 +43,7 @@ setuptools.setup(
     install_requires=[
         'opentracing>=2.0',
         'wavefront-pyformance>=1.0',
-        'wavefront-sdk-python>=1.4',
+        'wavefront-sdk-python>=1.6',
         ],
     test_require=[
         'freezegun>=0.3.11',

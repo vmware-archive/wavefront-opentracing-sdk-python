@@ -350,12 +350,22 @@ class WavefrontTracer(opentracing.Tracer):
             point_tags).inc(span_duration_millis)
         # Convert from millis to micros and add to histogram.
         span_duration_micros = span_duration_millis * 1000
-        wavefront_histogram.wavefront_histogram(
-            self.wf_derived_reporter.registry,
-            self.sanitize(application_service_prefix +
-                          span.get_operation_name() +
-                          self.DURATION_SUFFIX),
-            point_tags).add(span_duration_micros)
+        if span.is_error():
+            error_point_tags = dict(point_tags)
+            error_point_tags.update({'error': 'true'})
+            wavefront_histogram.wavefront_histogram(
+                self.wf_derived_reporter.registry,
+                self.sanitize(application_service_prefix +
+                              span.get_operation_name() +
+                              self.DURATION_SUFFIX),
+                error_point_tags).add(span_duration_micros)
+        else:
+            wavefront_histogram.wavefront_histogram(
+                self.wf_derived_reporter.registry,
+                self.sanitize(application_service_prefix +
+                              span.get_operation_name() +
+                              self.DURATION_SUFFIX),
+                point_tags).add(span_duration_micros)
 
     # pylint: disable=invalid-name
     def instantiate_wavefront_stats_reporter(self, wf_span_reporter,

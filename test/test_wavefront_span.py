@@ -302,6 +302,42 @@ class TestSpan(unittest.TestCase):
                 timestamp=mock.ANY)
         ], any_order=True)
 
+    @mock.patch('wavefront_sdk.proxy.WavefrontProxyClient')
+    def test_error_span_duration_histogram(self, wf_sender):
+        """Test duration histogram generated from error span."""
+        operation_name = 'dummy_op'
+        source = 'wavefront_source'
+        wf_sender = wf_sender()
+        tracer = WavefrontTracer(WavefrontSpanReporter(wf_sender, source),
+                                 self.application_tags,
+                                 report_frequency_millis=500)
+        with freezegun.freeze_time(
+                datetime.datetime(year=1, month=1, day=1)) as frozen_datetime:
+            span = tracer.start_active_span(operation_name=operation_name,
+                                            tags=[('tenant', 'tenant1'),
+                                                  ('env', 'staging')])
+            span.span.set_tag(opentracing.ext.tags.ERROR, True)
+            span.close()
+            frozen_datetime.tick(delta=datetime.timedelta(seconds=61))
+            time.sleep(1)
+            tracer.close()
+        wf_sender.assert_has_calls([
+            mock.call.send_distribution(
+                centroids=mock.ANY,
+                histogram_granularities={'!M'},
+                name='tracing.derived.app.service.{}.duration.'
+                     'micros'.format(operation_name),
+                source=source,
+                tags={'application': 'app',
+                      'service': 'service',
+                      'cluster': 'us-west-1',
+                      'shard': 'primary',
+                      'error': 'true',
+                      'custom_k': 'custom_v',
+                      'operationName': operation_name},
+                timestamp=mock.ANY)
+        ], any_order=True)
+
 
 if __name__ == '__main__':
     # run 'python -m unittest discover' from top-level to run tests
