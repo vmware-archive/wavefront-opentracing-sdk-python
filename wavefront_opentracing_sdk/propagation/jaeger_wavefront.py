@@ -24,7 +24,8 @@ class JaegerWavefrontPropagator(propagator.Propagator):
     _PARENT_ID_KEY = 'parent-id'
     _SAMPLING_DECISION_KEY = 'sampling-decision'
 
-    def __init__(self, trace_id_header, baggage_prefix):
+    def __init__(self, trace_id_header=_TRACE_ID_KEY,
+                 baggage_prefix=_BAGGAGE_PREFIX):
         """Construct Jaeger Wavefront Propagator."""
         self.trace_id_header = trace_id_header
         self.baggage_prefix = baggage_prefix
@@ -100,7 +101,7 @@ class JaegerWavefrontPropagator(propagator.Propagator):
             self.trace_id_header:
                 self.context_to_trace_id_header(span_context)})
         for key, val in span_context.baggage.items():
-            carrier.update({self._BAGGAGE_PREFIX + key: val})
+            carrier.update({self.baggage_prefix + key: val})
         if span_context.is_sampled():
             carrier.update(
                 {self._SAMPLING_DECISION_KEY: str(span_context.
@@ -132,8 +133,8 @@ class JaegerWavefrontPropagator(propagator.Propagator):
                 span_id = self.convert_to_uuid(trace_data[1])
                 parent_id = str(span_id)
                 sampling_decision = trace_data[3] == '1'
-            elif key.startswith(self._BAGGAGE_PREFIX.lower()):
-                baggage.update({strip_prefix(self._BAGGAGE_PREFIX, key): val})
+            elif key.startswith(self.baggage_prefix.lower()):
+                baggage.update({strip_prefix(self.baggage_prefix, key): val})
         if trace_id is None or span_id is None:
             return None
         if parent_id and parent_id.lower() != 'null':
