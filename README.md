@@ -6,7 +6,7 @@
 [![image](https://img.shields.io/pypi/l/wavefront-opentracing-sdk-python.svg)](https://pypi.org/project/wavefront-opentracing-sdk-python/)
 [![image](https://img.shields.io/pypi/pyversions/wavefront-opentracing-sdk-python.svg)](https://pypi.org/project/wavefront-opentracing-sdk-python/)
 
-The Wavefront by VMware OpenTracing SDK for Python is a library that provides open tracing support for Wavefront.
+The Wavefront by VMware OpenTracing SDK for Python is a library that provides Open Tracing support for Wavefront.
 
 ## Requirements and Installation
 
