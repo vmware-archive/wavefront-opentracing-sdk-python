@@ -7,7 +7,7 @@
 [![image](https://img.shields.io/pypi/pyversions/wavefront-opentracing-sdk-python.svg)](https://pypi.org/project/wavefront-opentracing-sdk-python/)
 
 ## Table of Content
-* [Prerequisites](#Prerequisites)
+* [Requirements and Installation](#Requirements-and-Installation)
 * [Usage](#Usage)
   * [Application Tags](#1-Set-Up-Application-Tags)
   * [WavefrontSender](#2-Set-Up-a-WavefrontSender)
