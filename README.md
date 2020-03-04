@@ -139,7 +139,7 @@ pip install wavefront-opentracing-sdk-python
 
 ## Usage
 
-[Tracer](https://github.com/opentracing/specification/blob/master/specification.md#tracer) is an OpenTracing [interface](https://github.com/opentracing/opentracing-java#initialization) for creating spans and propagating them across arbitrary transports.
+[Tracer](https://github.com/opentracing/specification/blob/master/specification.md#tracer) is an OpenTracing interface for creating spans and propagating them across arbitrary transports.
 
 This SDK provides a `WavefrontTracer` to create spans and send them to Wavefront. The `WavefrontTracer` also automatically generates and reports [RED metrics](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/common/metrics.md#red-metrics) from your spans.
 
@@ -161,7 +161,7 @@ tracer = WavefrontTracer(reporter=reporter, application_tags=application_tags)
 Application tags describe the structure of your application. They are included with every span reported to Wavefront and are associated with span tags that you can use to filter and query trace data in Wavefront.
 
 You encapsulate application tags in an `ApplicationTags` object.
-See [Instantiating ApplicationTags](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/java/applicationtags.md#application-tags) for details.
+See [Instantiating ApplicationTags](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/python/applicationtags.md).
 
 
 ### 2. Set Up a WavefrontSender
