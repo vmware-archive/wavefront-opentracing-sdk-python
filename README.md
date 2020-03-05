@@ -124,7 +124,6 @@ The Wavefront OpenTracing SDK for Python automatically reports metrics, custom t
     </ul>
   </td>
 </tr>
-
 </tbody>
 </table>
 
