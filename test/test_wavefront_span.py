@@ -23,6 +23,7 @@ from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
 from wavefront_opentracing_sdk.sampling import ConstantSampler
 
 import wavefront_sdk
+from wavefront_sdk.common.constants import NULL_TAG_VAL
 
 
 class TestSpan(unittest.TestCase):
@@ -191,7 +192,8 @@ class TestSpan(unittest.TestCase):
                       'cluster': 'us-west-1',
                       'shard': 'primary',
                       'custom_k': 'custom_v',
-                      'operationName': operation_name},
+                      'operationName': operation_name,
+                      'span.kind': NULL_TAG_VAL},
                 timestamp=None, value=1),
             mock.call.send_metric(
                 name='tracing.derived.new_app.service.{}.total_time.millis.'
@@ -199,7 +201,8 @@ class TestSpan(unittest.TestCase):
                 source=source,
                 tags={'application': 'new_app', 'service': 'service',
                       'cluster': 'us-west-1', 'shard': 'primary',
-                      'custom_k': 'custom_v', 'operationName': 'dummy_op'},
+                      'custom_k': 'custom_v', 'operationName': 'dummy_op',
+                      'span.kind': NULL_TAG_VAL},
                 timestamp=None, value=mock.ANY),
             mock.call.send_metric(
                 '~component.heartbeat', 1.0, mock.ANY,
@@ -220,7 +223,8 @@ class TestSpan(unittest.TestCase):
                       'cluster': 'us-west-1',
                       'shard': 'primary',
                       'custom_k': 'custom_v',
-                      'operationName': operation_name},
+                      'operationName': operation_name,
+                      'span.kind': NULL_TAG_VAL},
                 timestamp=mock.ANY)
         ], any_order=True)
 
@@ -266,7 +270,8 @@ class TestSpan(unittest.TestCase):
                       'custom_k': 'custom_v',
                       'operationName': operation_name,
                       'tenant': 'tenant1',
-                      'env': 'staging'},
+                      'env': 'staging',
+                      'span.kind': NULL_TAG_VAL},
                 timestamp=None, value=1),
             mock.call.send_metric(
                 name='tracing.derived.app.service.{}.total_time.millis.'
@@ -275,7 +280,8 @@ class TestSpan(unittest.TestCase):
                 tags={'application': 'app', 'service': 'service',
                       'cluster': 'us-west-1', 'shard': 'primary',
                       'custom_k': 'custom_v', 'operationName': 'dummy_op',
-                      'tenant': 'tenant1', 'env': 'staging'},
+                      'tenant': 'tenant1', 'env': 'staging',
+                      'span.kind': NULL_TAG_VAL},
                 timestamp=None, value=mock.ANY),
             mock.call.send_metric(
                 '~component.heartbeat', 1.0, mock.ANY,
@@ -298,7 +304,8 @@ class TestSpan(unittest.TestCase):
                       'custom_k': 'custom_v',
                       'operationName': operation_name,
                       'tenant': 'tenant1',
-                      'env': 'staging'},
+                      'env': 'staging',
+                      'span.kind': NULL_TAG_VAL},
                 timestamp=mock.ANY)
         ], any_order=True)
 
@@ -334,7 +341,8 @@ class TestSpan(unittest.TestCase):
                       'shard': 'primary',
                       'error': 'true',
                       'custom_k': 'custom_v',
-                      'operationName': operation_name},
+                      'operationName': operation_name,
+                      'span.kind': NULL_TAG_VAL},
                 timestamp=mock.ANY)
         ], any_order=True)
 
