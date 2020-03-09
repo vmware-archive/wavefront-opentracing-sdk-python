@@ -11,7 +11,7 @@ import uuid
 
 import opentracing
 import opentracing.scope_managers
-from opentracing.tags import SPAN_KIND
+from opentracing.tags import HTTP_STATUS_CODE, SPAN_KIND
 
 from wavefront_pyformance import tagged_registry
 from wavefront_pyformance import wavefront_histogram
@@ -75,7 +75,7 @@ class WavefrontTracer(opentracing.Tracer):
         self.report_frequency_millis = report_frequency_millis
         self.red_metrics_custom_tag_keys = {SPAN_KIND}
         if red_metrics_custom_tag_keys:
-            self.red_metrics_custom_tag_keys.\
+            self.red_metrics_custom_tag_keys. \
                 update(red_metrics_custom_tag_keys)
         wf_span_reporter = self.get_wavefront_span_reporter(reporter)
         if wf_span_reporter is not None:
@@ -311,7 +311,7 @@ class WavefrontTracer(opentracing.Tracer):
             return
         # Need to sanitize metric name as application, service and operation
         # names can have spaces and other invalid metric name characters.
-        point_tags = {self.OPERATION_NAME_TAG: span.get_operation_name()}
+        point_tags = {}
         span_tags = span.get_tags_as_map()
 
         if self.red_metrics_custom_tag_keys:
@@ -320,29 +320,39 @@ class WavefrontTracer(opentracing.Tracer):
                     point_tags.update({key: span_tags.get(key)[0]})
         # Set default value of span.kind tag.
         point_tags.setdefault(SPAN_KIND, constants.NULL_TAG_VAL)
+
         for key in self.single_valued_tag_keys:
             if key in span_tags:
                 point_tags.update({key: span_tags.get(key)[0]})
 
+        # Propagate http status if the span has error.
+        if span.is_error() and HTTP_STATUS_CODE in span_tags:
+            point_tags.update(
+                {HTTP_STATUS_CODE: span_tags.get(HTTP_STATUS_CODE)[0]})
+
         if self.heartbeater_service:
             self.heartbeater_service.report_custom_tags(point_tags)
 
+        # Add operation tag after sending RED heartbeat.
+        point_tags.update({self.OPERATION_NAME_TAG: span.get_operation_name()})
         application_service_prefix = (
             'tracing.derived.{}.{}.'.format(
                 span_tags.get(constants.APPLICATION_TAG_KEY)[0],
                 span_tags.get(constants.SERVICE_TAG_KEY)[0]))
 
-        self.wf_derived_reporter.registry.counter(
-            self.sanitize(application_service_prefix +
-                          span.get_operation_name() +
-                          self.INVOCATION_SUFFIX),
-            point_tags).inc()
         if span.is_error():
             self.wf_derived_reporter.registry.counter(
                 self.sanitize(application_service_prefix +
                               span.get_operation_name() +
                               self.ERROR_SUFFIX),
                 point_tags).inc()
+        # Remove http error status before sending request and duration metrics.
+        point_tags.pop(HTTP_STATUS_CODE, None)
+        self.wf_derived_reporter.registry.counter(
+            self.sanitize(application_service_prefix +
+                          span.get_operation_name() +
+                          self.INVOCATION_SUFFIX),
+            point_tags).inc()
         # Convert from secs to millis and add to duration counter.
         span_duration_millis = span.get_duration_time() * 1000
         self.wf_derived_reporter.registry.counter(
