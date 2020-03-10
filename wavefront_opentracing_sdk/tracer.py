@@ -11,7 +11,7 @@ import uuid
 
 import opentracing
 import opentracing.scope_managers
-from opentracing.tags import HTTP_STATUS_CODE, SPAN_KIND
+from opentracing.tags import COMPONENT, HTTP_STATUS_CODE, SPAN_KIND
 
 from wavefront_pyformance import tagged_registry
 from wavefront_pyformance import wavefront_histogram
@@ -324,6 +324,7 @@ class WavefrontTracer(opentracing.Tracer):
         for key in self.single_valued_tag_keys:
             if key in span_tags:
                 point_tags.update({key: span_tags.get(key)[0]})
+        point_tags.update({COMPONENT: span_tags.get(COMPONENT)[0]})
 
         # Propagate http status if the span has error.
         if span.is_error() and HTTP_STATUS_CODE in span_tags:

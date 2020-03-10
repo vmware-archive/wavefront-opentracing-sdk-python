@@ -69,7 +69,7 @@ class TestSpan(unittest.TestCase):
         self.assertIsNotNone(span.get_tags())
         self.assertIsNotNone(span.get_tags_as_list())
         self.assertIsNotNone(span.get_tags_as_map())
-        self.assertEqual(6, len(span.get_tags_as_map()))
+        self.assertEqual(7, len(span.get_tags_as_map()))
         self.assertTrue('new_app' in span.get_tags_as_map().get('application'))
         self.assertTrue('service' in span.get_tags_as_map().get('service'))
         self.assertTrue('us-west-1' in span.get_tags_as_map().get('cluster'))
@@ -181,7 +181,8 @@ class TestSpan(unittest.TestCase):
                      ('service', 'service'),
                      ('cluster', 'us-west-1'),
                      ('shard', 'primary'),
-                     ('custom_k', 'custom_v')],
+                     ('custom_k', 'custom_v'),
+                     ('component', 'none')],
                 span_logs=[]),
             mock.call.send_metric(
                 name='tracing.derived.new_app.service.{}.invocation.'
@@ -192,6 +193,7 @@ class TestSpan(unittest.TestCase):
                       'cluster': 'us-west-1',
                       'shard': 'primary',
                       'custom_k': 'custom_v',
+                      'component': 'none',
                       'operationName': operation_name,
                       'span.kind': NULL_TAG_VAL},
                 timestamp=None, value=1),
@@ -201,8 +203,8 @@ class TestSpan(unittest.TestCase):
                 source=source,
                 tags={'application': 'new_app', 'service': 'service',
                       'cluster': 'us-west-1', 'shard': 'primary',
-                      'custom_k': 'custom_v', 'operationName': 'dummy_op',
-                      'span.kind': NULL_TAG_VAL},
+                      'custom_k': 'custom_v', 'component': 'none',
+                      'operationName': 'dummy_op', 'span.kind': NULL_TAG_VAL},
                 timestamp=None, value=mock.ANY),
             mock.call.send_metric(
                 '~component.heartbeat', 1.0, mock.ANY,
@@ -223,6 +225,7 @@ class TestSpan(unittest.TestCase):
                       'cluster': 'us-west-1',
                       'shard': 'primary',
                       'custom_k': 'custom_v',
+                      'component': 'none',
                       'operationName': operation_name,
                       'span.kind': NULL_TAG_VAL},
                 timestamp=mock.ANY)
@@ -257,7 +260,8 @@ class TestSpan(unittest.TestCase):
                      ('service', 'service'),
                      ('cluster', 'us-west-1'),
                      ('shard', 'primary'),
-                     ('custom_k', 'custom_v')],
+                     ('custom_k', 'custom_v'),
+                     ('component', 'none')],
                 span_logs=[]),
             mock.call.send_metric(
                 name='tracing.derived.app.service.{}.invocation.'
@@ -267,6 +271,7 @@ class TestSpan(unittest.TestCase):
                       'service': 'service',
                       'cluster': 'us-west-1',
                       'shard': 'primary',
+                      'component': 'none',
                       'custom_k': 'custom_v',
                       'operationName': operation_name,
                       'tenant': 'tenant1',
@@ -279,6 +284,7 @@ class TestSpan(unittest.TestCase):
                 source=source,
                 tags={'application': 'app', 'service': 'service',
                       'cluster': 'us-west-1', 'shard': 'primary',
+                      'component': 'none',
                       'custom_k': 'custom_v', 'operationName': 'dummy_op',
                       'tenant': 'tenant1', 'env': 'staging',
                       'span.kind': NULL_TAG_VAL},
@@ -301,6 +307,7 @@ class TestSpan(unittest.TestCase):
                       'service': 'service',
                       'cluster': 'us-west-1',
                       'shard': 'primary',
+                      'component': 'none',
                       'custom_k': 'custom_v',
                       'operationName': operation_name,
                       'tenant': 'tenant1',
@@ -341,6 +348,7 @@ class TestSpan(unittest.TestCase):
                       'shard': 'primary',
                       'error': 'true',
                       'custom_k': 'custom_v',
+                      'component': 'none',
                       'operationName': operation_name,
                       'span.kind': NULL_TAG_VAL},
                 timestamp=mock.ANY)
