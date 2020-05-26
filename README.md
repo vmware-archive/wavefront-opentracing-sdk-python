@@ -241,6 +241,18 @@ tracer = wavefront_opentracing_sdk.WavefrontTracer(
     application_tags=application_tags)
 ```
 
+#### Add Custom Span-Level RED metrics
+
+Optionally, you can add custom span-level tags to propagate RED metrics. See [Custom Span-Level Tags for RED Metrics](https://docs.wavefront.com/trace_data_details.html#custom-span-level-tags-for-red-metrics) for details.
+
+```python
+# Construct Wavefront opentracing Tracer
+tracer = wavefront_opentracing_sdk.WavefrontTracer(
+    reporter=wf_span_reporter,
+    application_tags=application_tags,
+    red_metrics_custom_tag_keys={'env', 'location'})
+```
+
 #### Close the Tracer
 Always close the tracer before exiting your application to flush all buffered spans to Wavefront.
 
