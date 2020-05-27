@@ -243,7 +243,7 @@ tracer = wavefront_opentracing_sdk.WavefrontTracer(
 
 #### Add Custom Span-Level RED metrics
 
-Optionally, can propagate custom span-level tags to RED metrics. See [Custom Span-Level Tags for RED Metrics](https://docs.wavefront.com/trace_data_details.html#custom-span-level-tags-for-red-metrics) for details.
+Optionally, you can propagate custom span-level tags to RED metrics. See [Custom Span-Level Tags for RED Metrics](https://docs.wavefront.com/trace_data_details.html#custom-span-level-tags-for-red-metrics) for details.
 
 ```python
 # Construct Wavefront opentracing Tracer
