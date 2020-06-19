@@ -16,13 +16,14 @@ try:
 except ImportError:
     from unittest import mock
 
+
+from opentracing.tags import HTTP_STATUS_CODE
+
 from wavefront_opentracing_sdk import WavefrontSpanContext
 from wavefront_opentracing_sdk import WavefrontTracer
 from wavefront_opentracing_sdk.reporting import ConsoleReporter
 from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
 from wavefront_opentracing_sdk.sampling import ConstantSampler
-
-from opentracing.tags import HTTP_STATUS_CODE
 
 import wavefront_sdk
 from wavefront_sdk.common.constants import NULL_TAG_VAL
@@ -218,7 +219,7 @@ class TestSpan(unittest.TestCase):
                       'component': 'none',
                       'operationName': operation_name,
                       'span.kind': NULL_TAG_VAL},
-                 value=1),
+                value=1),
             mock.call.send_delta_counter(
                 name='∆tracing.derived.new_app.service.{}.total_time.millis.'
                      'count'.format(operation_name),

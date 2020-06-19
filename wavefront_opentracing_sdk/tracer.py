@@ -13,9 +13,9 @@ import opentracing
 import opentracing.scope_managers
 from opentracing.tags import COMPONENT, HTTP_STATUS_CODE, SPAN_KIND
 
+from wavefront_pyformance import delta
 from wavefront_pyformance import tagged_registry
 from wavefront_pyformance import wavefront_histogram
-from wavefront_pyformance import delta
 from wavefront_pyformance import wavefront_reporter
 
 import wavefront_sdk.common
