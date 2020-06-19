@@ -22,9 +22,11 @@ from wavefront_opentracing_sdk.reporting import ConsoleReporter
 from wavefront_opentracing_sdk.reporting import WavefrontSpanReporter
 from wavefront_opentracing_sdk.sampling import ConstantSampler
 
+from opentracing.tags import HTTP_STATUS_CODE
+
 import wavefront_sdk
 from wavefront_sdk.common.constants import NULL_TAG_VAL
-from opentracing.tags import HTTP_STATUS_CODE
+
 
 class TestSpan(unittest.TestCase):
     """Unit Tests for Wavefront Span."""
@@ -295,7 +297,7 @@ class TestSpan(unittest.TestCase):
                       'shard': 'primary',
                       'component': 'none',
                       'custom_k': 'custom_v',
-                      HTTP_STATUS_CODE : '200',
+                      HTTP_STATUS_CODE: '200',
                       'operationName': operation_name,
                       'tenant': 'tenant1',
                       'env': 'staging',
@@ -309,7 +311,7 @@ class TestSpan(unittest.TestCase):
                       'cluster': 'us-west-1', 'shard': 'primary',
                       'component': 'none',
                       'custom_k': 'custom_v',
-                      HTTP_STATUS_CODE : '200',
+                      HTTP_STATUS_CODE: '200',
                       'operationName': 'dummy_op',
                       'tenant': 'tenant1', 'env': 'staging',
                       'span.kind': NULL_TAG_VAL},
@@ -334,7 +336,7 @@ class TestSpan(unittest.TestCase):
                       'shard': 'primary',
                       'component': 'none',
                       'custom_k': 'custom_v',
-                      HTTP_STATUS_CODE : '200',
+                      HTTP_STATUS_CODE: '200',
                       'operationName': operation_name,
                       'tenant': 'tenant1',
                       'env': 'staging',
