@@ -104,6 +104,26 @@ class TestSpan(unittest.TestCase):
         self.assertIsNotNone(span.context.get_sampling_decision())
         self.assertTrue(span.context.get_sampling_decision())
 
+        span = tracer.start_span('test_op')
+        self.assertIsNotNone(span)
+        self.assertIsNotNone(span.context)
+        self.assertIsNotNone(span.context.get_sampling_decision())
+        self.assertFalse(span.context.get_sampling_decision())
+
+        span.set_tag("debug", True)
+        self.assertIsNotNone(span.context.get_sampling_decision())
+        self.assertTrue(span.context.get_sampling_decision())
+
+        span = tracer.start_span('test_op')
+        self.assertIsNotNone(span)
+        self.assertIsNotNone(span.context)
+        self.assertIsNotNone(span.context.get_sampling_decision())
+        self.assertFalse(span.context.get_sampling_decision())
+
+        span.set_tag("debug", "true")
+        self.assertIsNotNone(span.context.get_sampling_decision())
+        self.assertTrue(span.context.get_sampling_decision())
+
     def test_root_sampling(self):
         """Test root span with sampling."""
         tracer = WavefrontTracer(ConsoleReporter(), self.application_tags,
