@@ -10,14 +10,12 @@ import uuid
 import freezegun
 
 import opentracing.ext.tags
+from opentracing.tags import HTTP_STATUS_CODE
 
 try:
     import mock
 except ImportError:
     from unittest import mock
-
-
-from opentracing.tags import HTTP_STATUS_CODE
 
 from wavefront_opentracing_sdk import WavefrontSpanContext
 from wavefront_opentracing_sdk import WavefrontTracer
