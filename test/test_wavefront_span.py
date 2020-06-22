@@ -10,6 +10,7 @@ import uuid
 import freezegun
 
 import opentracing.ext.tags
+from opentracing.tags import HTTP_STATUS_CODE
 
 try:
     import mock
@@ -104,6 +105,26 @@ class TestSpan(unittest.TestCase):
         self.assertIsNotNone(span.context.get_sampling_decision())
         self.assertTrue(span.context.get_sampling_decision())
 
+        span = tracer.start_span('test_op')
+        self.assertIsNotNone(span)
+        self.assertIsNotNone(span.context)
+        self.assertIsNotNone(span.context.get_sampling_decision())
+        self.assertFalse(span.context.get_sampling_decision())
+
+        span.set_tag("debug", True)
+        self.assertIsNotNone(span.context.get_sampling_decision())
+        self.assertTrue(span.context.get_sampling_decision())
+
+        span = tracer.start_span('test_op')
+        self.assertIsNotNone(span)
+        self.assertIsNotNone(span.context)
+        self.assertIsNotNone(span.context.get_sampling_decision())
+        self.assertFalse(span.context.get_sampling_decision())
+
+        span.set_tag("debug", "true")
+        self.assertIsNotNone(span.context.get_sampling_decision())
+        self.assertTrue(span.context.get_sampling_decision())
+
     def test_root_sampling(self):
         """Test root span with sampling."""
         tracer = WavefrontTracer(ConsoleReporter(), self.application_tags,
@@ -184,8 +205,8 @@ class TestSpan(unittest.TestCase):
                      ('custom_k', 'custom_v'),
                      ('component', 'none')],
                 span_logs=[]),
-            mock.call.send_metric(
-                name='tracing.derived.new_app.service.{}.invocation.'
+            mock.call.send_delta_counter(
+                name='∆tracing.derived.new_app.service.{}.invocation.'
                      'count'.format(operation_name),
                 source=source,
                 tags={'application': 'new_app',
@@ -196,16 +217,16 @@ class TestSpan(unittest.TestCase):
                       'component': 'none',
                       'operationName': operation_name,
                       'span.kind': NULL_TAG_VAL},
-                timestamp=None, value=1),
-            mock.call.send_metric(
-                name='tracing.derived.new_app.service.{}.total_time.millis.'
+                value=1),
+            mock.call.send_delta_counter(
+                name='∆tracing.derived.new_app.service.{}.total_time.millis.'
                      'count'.format(operation_name),
                 source=source,
                 tags={'application': 'new_app', 'service': 'service',
                       'cluster': 'us-west-1', 'shard': 'primary',
                       'custom_k': 'custom_v', 'component': 'none',
                       'operationName': 'dummy_op', 'span.kind': NULL_TAG_VAL},
-                timestamp=None, value=mock.ANY),
+                value=mock.ANY),
             mock.call.send_metric(
                 '~component.heartbeat', 1.0, mock.ANY,
                 source,
@@ -246,7 +267,8 @@ class TestSpan(unittest.TestCase):
                 datetime.datetime(year=1, month=1, day=1)) as frozen_datetime:
             span = tracer.start_active_span(operation_name=operation_name,
                                             tags=[('tenant', 'tenant1'),
-                                                  ('env', 'staging')])
+                                                  ('env', 'staging'),
+                                                  (HTTP_STATUS_CODE, '200')])
             span.close()
             frozen_datetime.tick(delta=datetime.timedelta(seconds=61))
             time.sleep(1)
@@ -256,6 +278,7 @@ class TestSpan(unittest.TestCase):
                 operation_name, mock.ANY, 0, source, mock.ANY, mock.ANY, [],
                 [], [('tenant', 'tenant1'),
                      ('env', 'staging'),
+                     (HTTP_STATUS_CODE, '200'),
                      ('application', 'app'),
                      ('service', 'service'),
                      ('cluster', 'us-west-1'),
@@ -263,8 +286,8 @@ class TestSpan(unittest.TestCase):
                      ('custom_k', 'custom_v'),
                      ('component', 'none')],
                 span_logs=[]),
-            mock.call.send_metric(
-                name='tracing.derived.app.service.{}.invocation.'
+            mock.call.send_delta_counter(
+                name='∆tracing.derived.app.service.{}.invocation.'
                      'count'.format(operation_name),
                 source=source,
                 tags={'application': 'app',
@@ -273,22 +296,25 @@ class TestSpan(unittest.TestCase):
                       'shard': 'primary',
                       'component': 'none',
                       'custom_k': 'custom_v',
+                      HTTP_STATUS_CODE: '200',
                       'operationName': operation_name,
                       'tenant': 'tenant1',
                       'env': 'staging',
                       'span.kind': NULL_TAG_VAL},
-                timestamp=None, value=1),
-            mock.call.send_metric(
-                name='tracing.derived.app.service.{}.total_time.millis.'
+                value=1),
+            mock.call.send_delta_counter(
+                name='∆tracing.derived.app.service.{}.total_time.millis.'
                      'count'.format(operation_name),
                 source=source,
                 tags={'application': 'app', 'service': 'service',
                       'cluster': 'us-west-1', 'shard': 'primary',
                       'component': 'none',
-                      'custom_k': 'custom_v', 'operationName': 'dummy_op',
+                      'custom_k': 'custom_v',
+                      HTTP_STATUS_CODE: '200',
+                      'operationName': 'dummy_op',
                       'tenant': 'tenant1', 'env': 'staging',
                       'span.kind': NULL_TAG_VAL},
-                timestamp=None, value=mock.ANY),
+                value=mock.ANY),
             mock.call.send_metric(
                 '~component.heartbeat', 1.0, mock.ANY,
                 source,
@@ -309,6 +335,7 @@ class TestSpan(unittest.TestCase):
                       'shard': 'primary',
                       'component': 'none',
                       'custom_k': 'custom_v',
+                      HTTP_STATUS_CODE: '200',
                       'operationName': operation_name,
                       'tenant': 'tenant1',
                       'env': 'staging',

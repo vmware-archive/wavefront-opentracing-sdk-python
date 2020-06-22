@@ -13,6 +13,7 @@ import opentracing
 import opentracing.scope_managers
 from opentracing.tags import COMPONENT, HTTP_STATUS_CODE, SPAN_KIND
 
+from wavefront_pyformance import delta
 from wavefront_pyformance import tagged_registry
 from wavefront_pyformance import wavefront_histogram
 from wavefront_pyformance import wavefront_reporter
@@ -327,7 +328,7 @@ class WavefrontTracer(opentracing.Tracer):
         point_tags.update({COMPONENT: span_tags.get(COMPONENT)[0]})
 
         # Propagate http status if the span has error.
-        if span.is_error() and HTTP_STATUS_CODE in span_tags:
+        if HTTP_STATUS_CODE in span_tags:
             point_tags.update(
                 {HTTP_STATUS_CODE: span_tags.get(HTTP_STATUS_CODE)[0]})
 
@@ -342,25 +343,24 @@ class WavefrontTracer(opentracing.Tracer):
                 span_tags.get(constants.SERVICE_TAG_KEY)[0]))
 
         if span.is_error():
-            self.wf_derived_reporter.registry.counter(
-                self.sanitize(application_service_prefix +
-                              span.get_operation_name() +
-                              self.ERROR_SUFFIX),
-                point_tags).inc()
-        # Remove http error status before sending request and duration metrics.
-        point_tags.pop(HTTP_STATUS_CODE, None)
-        self.wf_derived_reporter.registry.counter(
-            self.sanitize(application_service_prefix +
-                          span.get_operation_name() +
-                          self.INVOCATION_SUFFIX),
-            point_tags).inc()
+            delta.delta_counter(self.wf_derived_reporter.registry,
+                                self.sanitize(application_service_prefix +
+                                              span.get_operation_name() +
+                                              self.ERROR_SUFFIX),
+                                point_tags).inc()
+
+        delta.delta_counter(self.wf_derived_reporter.registry,
+                            self.sanitize(application_service_prefix +
+                                          span.get_operation_name() +
+                                          self.INVOCATION_SUFFIX),
+                            point_tags).inc()
         # Convert from secs to millis and add to duration counter.
         span_duration_millis = span.get_duration_time() * 1000
-        self.wf_derived_reporter.registry.counter(
-            self.sanitize(application_service_prefix +
-                          span.get_operation_name() +
-                          self.TOTAL_TIME_SUFFIX),
-            point_tags).inc(span_duration_millis)
+        delta.delta_counter(self.wf_derived_reporter.registry,
+                            self.sanitize(application_service_prefix +
+                                          span.get_operation_name() +
+                                          self.TOTAL_TIME_SUFFIX),
+                            point_tags).inc(span_duration_millis)
         # Convert from millis to micros and add to histogram.
         span_duration_micros = span_duration_millis * 1000
         if span.is_error():

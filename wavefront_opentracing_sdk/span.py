@@ -88,6 +88,13 @@ class WavefrontSpan(opentracing.Span):
                     self._force_sampling = value > 0
                     self._context = self._context.with_sampling_decision(
                         self._force_sampling)
+                # allow span to be reported if debug is set to true.
+                if (not self._force_sampling
+                        and key == "debug"
+                        and str(value).lower() == "true"):
+                    force_sampling = True
+                    self._context = self._context.with_sampling_decision(
+                        force_sampling)
                 if key is opentracing.ext.tags.ERROR:
                     self._is_error = True
                 # allow span to be reported if error tag is set.
