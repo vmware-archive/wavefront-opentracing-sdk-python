@@ -5,8 +5,7 @@ Abstract Class of Reporter.
 """
 
 
-# pylint: disable=E0012,R0205
-class Reporter(object):
+class Reporter:
     """Tracing span data reporter."""
 
     def __init__(self, source=None):

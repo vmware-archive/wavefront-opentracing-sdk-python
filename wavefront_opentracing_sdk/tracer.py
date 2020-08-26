@@ -62,7 +62,7 @@ class WavefrontTracer(opentracing.Tracer):
         :type red_metrics_custom_tag_keys: Custom RED metrics tags.
         :param red_metrics_custom_tag_keys: set of str
         """
-        super(WavefrontTracer, self).__init__(
+        super().__init__(
             opentracing.scope_managers.ThreadLocalScopeManager())
         self._reporter = reporter
         self._tags = global_tags or []

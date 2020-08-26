@@ -44,7 +44,7 @@ class WavefrontSpanReporter(reporter.Reporter):
         self._span_buffer = Queue(maxsize=self._max_queue_size)
         self._metrics_reporter = self._registry = self.span_received = \
             self.spans_dropped = self.report_errors = None
-        super(WavefrontSpanReporter, self).__init__(source)
+        super().__init__(source)
         self.sending_thread = threading.Thread(target=self.run,
                                                name="wavefront_span_reporter")
         self.sending_thread.setDaemon(True)

@@ -130,7 +130,7 @@ The Wavefront OpenTracing SDK for Python automatically reports metrics, custom t
 
 ## Requirements and Installation
 
-This SDK supports Python 2.7+ and Python 3.x.
+This SDK supports Python 3.x.
 
 ```bash
 pip install wavefront-opentracing-sdk-python

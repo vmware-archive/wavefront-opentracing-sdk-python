@@ -9,8 +9,7 @@ from . import http
 from . import textmap
 
 
-# pylint: disable=E0012,R0205
-class PropagatorRegistry(object):
+class PropagatorRegistry:
     """Registry of available propagators."""
 
     def __init__(self):
