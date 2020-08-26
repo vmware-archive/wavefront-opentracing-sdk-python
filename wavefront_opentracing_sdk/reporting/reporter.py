@@ -5,7 +5,7 @@ Abstract Class of Reporter.
 """
 
 
-class Reporter():
+class Reporter:
     """Tracing span data reporter."""
 
     def __init__(self, source=None):
