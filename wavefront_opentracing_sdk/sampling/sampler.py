@@ -4,7 +4,7 @@
 """
 
 
-class Sampler():
+class Sampler:
     """Abstract tracing span sampler."""
 
     def sample(self, operation_name, trace_id, duration):
