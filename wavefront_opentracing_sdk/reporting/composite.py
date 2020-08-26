@@ -20,7 +20,7 @@ class CompositeReporter(reporter.Reporter):
         :param reporters: Reporters of composite reporter
         :type reporters: Reporter
         """
-        super(CompositeReporter, self).__init__()
+        super().__init__()
         self.reporters = reporters
 
     def report(self, wavefront_span):

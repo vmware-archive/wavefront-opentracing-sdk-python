@@ -38,7 +38,7 @@ class WavefrontSpan(opentracing.Span):
         :param tags: Tags of the span
         :type tags: list of tuple
         """
-        super(WavefrontSpan, self).__init__(tracer=tracer, context=context)
+        super().__init__(tracer=tracer, context=context)
         self._context = context
         self.operation_name = operation_name
         self.start_time = start_time
