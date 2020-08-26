@@ -1,4 +1,4 @@
-dist: xenial
+dist: focal
 language: python
 python:
 - "3.5"
@@ -39,4 +39,3 @@ deploy:
   on:
     python: 3.7
     tags: true
-
