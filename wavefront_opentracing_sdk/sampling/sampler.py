@@ -4,7 +4,6 @@
 """
 
 
-# pylint: disable=E0012,R0205
 class Sampler(object):
     """Abstract tracing span sampler."""
 
