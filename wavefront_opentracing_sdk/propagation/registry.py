@@ -9,7 +9,7 @@ from . import http
 from . import textmap
 
 
-class PropagatorRegistry():
+class PropagatorRegistry:
     """Registry of available propagators."""
 
     def __init__(self):
