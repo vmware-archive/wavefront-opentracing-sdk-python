@@ -112,7 +112,7 @@ class WavefrontSpanReporter(reporter.Reporter):
         """
         self._metrics_reporter = wavefront_reporter
         self._registry = wavefront_reporter.registry
-        self._registry.gauge('sender.version', self.CustomGauge(
+        self._registry.gauge('version', self.CustomGauge(
                 lambda: get_sem_ver('wavefront-opentracing-sdk-python')))
         self._registry.gauge("reporter.queue.size",
                              self.CustomGauge(self._span_buffer.qsize))
