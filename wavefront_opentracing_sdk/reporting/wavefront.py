@@ -13,6 +13,8 @@ import threading
 
 from pyformance import meters
 
+from wavefront_sdk.common.utils import get_sem_ver
+
 from . import reporter
 
 
@@ -110,6 +112,8 @@ class WavefrontSpanReporter(reporter.Reporter):
         """
         self._metrics_reporter = wavefront_reporter
         self._registry = wavefront_reporter.registry
+        self._registry.gauge('version', self.CustomGauge(
+                lambda: get_sem_ver('wavefront-opentracing-sdk-python')))
         self._registry.gauge("reporter.queue.size",
                              self.CustomGauge(self._span_buffer.qsize))
         self._registry.gauge("reporter.queue.remaining_capacity", self.
