@@ -167,9 +167,9 @@ See [Instantiating ApplicationTags](https://github.com/wavefrontHQ/wavefront-sdk
 
 A `WavefrontSender` object implements the low-level interface for sending data to Wavefront. You can choose to send data using the [Wavefront proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
 
-* If you have already set up a `WavefrontSender` for another SDK that runs in the same process, use that one. (For details about sharing a Wavefront sender, see [Share a Wavefront Sender](https://github.com/wavefrontHQ/wavefront-sdk-python/blob/master/docs/sender.md#share-a-wavefront-sender).
+* If you have already set up a `WavefrontSender` for another SDK that runs in the same process, use that one. (For details about sharing a Wavefront sender, see [Share a Wavefront Sender](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/python/wavefrontsender.md#share-a-wavefront-sender).
 
-* Otherwise, [Set Up a Wavefront Sender](https://github.com/wavefrontHQ/wavefront-sdk-python/blob/master/docs/sender.md#set-up-a-wavefront-sender).
+* Otherwise, [Set Up a Wavefront Sender](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/python/wavefrontsender.md#set-up-a-wavefront-sender).
 
 
 ### 3. Set Up a Reporter
