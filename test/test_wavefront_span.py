@@ -84,7 +84,8 @@ class TestSpan(unittest.TestCase):
     def test_tags_as_dict(self):
         """Test Multi-valued Tags."""
         tracer = WavefrontTracer(ConsoleReporter(), self.application_tags)
-        span = tracer.start_span('test_op', tags={'key1': 'val1', 'application': 'new_app'})
+        span = tracer.start_span('test_op', tags={
+            'key1': 'val1', 'application': 'new_app'})
         self.assertIsNotNone(span)
         self.assertIsNotNone(span.get_tags())
         self.assertIsNotNone(span.get_tags_as_list())
