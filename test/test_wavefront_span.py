@@ -81,6 +81,25 @@ class TestSpan(unittest.TestCase):
         span.finish()
         tracer.close()
 
+    def test_tags_as_dict(self):
+        """Test Multi-valued Tags."""
+        tracer = WavefrontTracer(ConsoleReporter(), self.application_tags)
+        span = tracer.start_span('test_op', tags={
+            'key1': 'val1', 'application': 'new_app'})
+        self.assertIsNotNone(span)
+        self.assertIsNotNone(span.get_tags())
+        self.assertIsNotNone(span.get_tags_as_list())
+        self.assertIsNotNone(span.get_tags_as_map())
+        self.assertEqual(7, len(span.get_tags_as_map()))
+        self.assertTrue('new_app' in span.get_tags_as_map().get('application'))
+        self.assertTrue('service' in span.get_tags_as_map().get('service'))
+        self.assertTrue('us-west-1' in span.get_tags_as_map().get('cluster'))
+        self.assertTrue('primary' in span.get_tags_as_map().get('shard'))
+        self.assertTrue('custom_v' in span.get_tags_as_map().get('custom_k'))
+        self.assertTrue('val1' in span.get_tags_as_map().get('key1'))
+        span.finish()
+        tracer.close()
+
     def test_forced_sampling(self):
         """Test span with forced sampling."""
         tracer = WavefrontTracer(ConsoleReporter(), self.application_tags,

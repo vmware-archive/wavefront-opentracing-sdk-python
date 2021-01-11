@@ -106,8 +106,9 @@ class WavefrontTracer(opentracing.Tracer):
             parent :class:`SpanContext`\ s. (See the Reference documentation
             for detail).
         :type references: `list` of `opentracing.Reference`
-        :param tags: an optional list of tags.
-        :type tags: list of pair
+        :param tags: optional span tags (either list of (tag_key, tag_value)
+            pairs or a dictionary).
+        :type tags: dict or list of pair
         :param start_time: an explicit Span start time as a unix timestamp per
             :meth:`time.time()`
         :type start_time: float
@@ -120,6 +121,7 @@ class WavefrontTracer(opentracing.Tracer):
         parents = []
         follows = []
         baggage = {}
+        tags = list(tags.items()) if isinstance(tags, dict) else tags
         tags = tags or []
         span_tag_keys = {span_tag[0] for span_tag in tags}
         for tag in self._tags:
@@ -195,8 +197,9 @@ class WavefrontTracer(opentracing.Tracer):
             parent :class:`SpanContext`\ s. (See the Reference documentation
             for detail).
         :type references: `list` of `opentracing.Reference`
-        :param tags: an optional list of tags.
-        :type tags: list of pair
+        :param tags: optional span tags (either list of (tag_key, tag_value)
+            pairs or a dictionary).
+        :type tags: dict or list of pairs
         :param start_time: an explicit Span start time as a unix timestamp per
             :meth:`time.time()`
         :type start_time: float
