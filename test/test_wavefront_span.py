@@ -8,7 +8,6 @@ import unittest
 import uuid
 
 import freezegun
-
 import opentracing.ext.tags
 from opentracing.tags import HTTP_STATUS_CODE
 
@@ -78,6 +77,7 @@ class TestSpan(unittest.TestCase):
         self.assertTrue('custom_v' in span.get_tags_as_map().get('custom_k'))
         self.assertTrue('val1' in span.get_tags_as_map().get('key1'))
         self.assertTrue('val2' in span.get_tags_as_map().get('key1'))
+        self.assertEqual(['none'], span.get_tags_as_map().get('component'))
         span.finish()
         tracer.close()
 
@@ -97,6 +97,20 @@ class TestSpan(unittest.TestCase):
         self.assertTrue('primary' in span.get_tags_as_map().get('shard'))
         self.assertTrue('custom_v' in span.get_tags_as_map().get('custom_k'))
         self.assertTrue('val1' in span.get_tags_as_map().get('key1'))
+        self.assertEqual(['none'], span.get_tags_as_map().get('component'))
+        span.finish()
+        tracer.close()
+
+    def test_tags_with_components_defined(self):
+        """Test Multi-valued Tags."""
+        tracer = WavefrontTracer(ConsoleReporter(), self.application_tags)
+        span = tracer.start_span('test_op', tags={'component': 'my_component'})
+        self.assertIsNotNone(span)
+        self.assertIsNotNone(span.get_tags())
+        self.assertIsNotNone(span.get_tags_as_list())
+        self.assertIsNotNone(span.get_tags_as_map())
+        self.assertEqual(6, len(span.get_tags_as_map()))
+        self.assertEqual(['my_component'], span.get_tags_as_map().get('component'))
         span.finish()
         tracer.close()
 

@@ -54,7 +54,7 @@ class WavefrontSpan(opentracing.Span):
         for tag in tags:
             if isinstance(tag, tuple):
                 self.set_tag(tag[0], tag[1])
-        if opentracing.ext.tags.COMPONENT not in self.tags:
+        if opentracing.ext.tags.COMPONENT not in dict(self.tags):
             self.set_tag(opentracing.ext.tags.COMPONENT, "none")
         self._spans_discarded = None if tracer.wf_internal_reporter is None \
             else tracer.wf_internal_reporter.registry.\
