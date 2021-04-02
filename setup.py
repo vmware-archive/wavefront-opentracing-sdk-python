@@ -43,7 +43,7 @@ setuptools.setup(
     install_requires=[
         'opentracing>=2.0',
         'wavefront-pyformance>=1.3',
-        'wavefront-sdk-python>=1.7.9',
+        'wavefront-sdk-python>=1.8.0',
         ],
     test_require=[
         'freezegun>=0.3.11',
