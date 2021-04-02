@@ -10,8 +10,11 @@ import opentracing
 import opentracing.ext.tags
 
 import wavefront_sdk.common.utils
-from wavefront_sdk.entities.tracing import span_log
+
 from wavefront_pyformance import delta
+
+from wavefront_sdk.entities.tracing import span_log
+
 
 # pylint: disable=too-many-instance-attributes
 class WavefrontSpan(opentracing.Span):

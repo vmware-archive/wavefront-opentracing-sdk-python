@@ -12,6 +12,7 @@ import socket
 import threading
 
 from pyformance import meters
+
 from wavefront_pyformance import delta
 
 from wavefront_sdk.common.utils import get_sem_ver
@@ -119,9 +120,12 @@ class WavefrontSpanReporter(reporter.Reporter):
                              self.CustomGauge(self._span_buffer.qsize))
         self._registry.gauge("reporter.queue.remaining_capacity", self.
                              CustomGauge(self._get_span_buffer_remain_size))
-        self.span_received = delta.delta_counter(self._registry, "reporter.spans.received")
-        self.spans_dropped = delta.delta_counter(self._registry, "reporter.spans.dropped")
-        self.report_errors = delta.delta_counter(self._registry, "reporter.spans.errors")
+        self.span_received = delta.delta_counter(self._registry,
+                            "reporter.spans.received")
+        self.spans_dropped = delta.delta_counter(self._registry,
+                            "reporter.spans.dropped")
+        self.report_errors = delta.delta_counter(self._registry,
+                            "reporter.spans.errors")
 
     def _get_span_buffer_remain_size(self):
         """Calculate remain size of span buffer."""
