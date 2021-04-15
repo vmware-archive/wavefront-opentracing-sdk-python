@@ -8,6 +8,7 @@ import unittest
 import uuid
 
 import freezegun
+
 import opentracing.ext.tags
 from opentracing.tags import HTTP_STATUS_CODE
 
@@ -110,7 +111,8 @@ class TestSpan(unittest.TestCase):
         self.assertIsNotNone(span.get_tags_as_list())
         self.assertIsNotNone(span.get_tags_as_map())
         self.assertEqual(6, len(span.get_tags_as_map()))
-        self.assertEqual(['my_component'], span.get_tags_as_map().get('component'))
+        self.assertEqual(['my_component'],
+                         span.get_tags_as_map().get('component'))
         span.finish()
         tracer.close()
 
