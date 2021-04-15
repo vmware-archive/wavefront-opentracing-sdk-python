@@ -121,11 +121,11 @@ class WavefrontSpanReporter(reporter.Reporter):
         self._registry.gauge("reporter.queue.remaining_capacity", self.
                              CustomGauge(self._get_span_buffer_remain_size))
         self.span_received = delta.delta_counter(self._registry,
-                            "reporter.spans.received")
+                                                 "reporter.spans.received")
         self.spans_dropped = delta.delta_counter(self._registry,
-                            "reporter.spans.dropped")
+                                                 "reporter.spans.dropped")
         self.report_errors = delta.delta_counter(self._registry,
-                            "reporter.spans.errors")
+                                                 "reporter.spans.errors")
 
     def _get_span_buffer_remain_size(self):
         """Calculate remain size of span buffer."""

@@ -112,7 +112,7 @@ class TestSpan(unittest.TestCase):
         self.assertIsNotNone(span.get_tags_as_map())
         self.assertEqual(6, len(span.get_tags_as_map()))
         self.assertEqual(['my_component'],
-                        span.get_tags_as_map().get('component'))
+                         span.get_tags_as_map().get('component'))
         span.finish()
         tracer.close()
 
