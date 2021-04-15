@@ -9,9 +9,9 @@ import time
 import opentracing
 import opentracing.ext.tags
 
-import wavefront_sdk.common.utils
-
 from wavefront_pyformance import delta
+
+import wavefront_sdk.common.utils
 
 from wavefront_sdk.entities.tracing import span_log
 
