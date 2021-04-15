@@ -12,7 +12,6 @@ import opentracing.ext.tags
 from wavefront_pyformance import delta
 
 import wavefront_sdk.common.utils
-
 from wavefront_sdk.entities.tracing import span_log
 
 
@@ -60,9 +59,9 @@ class WavefrontSpan(opentracing.Span):
         if opentracing.ext.tags.COMPONENT not in dict(self.tags):
             self.set_tag(opentracing.ext.tags.COMPONENT, "none")
         self._spans_discarded = (None if tracer.wf_internal_reporter is None
-	                                 else delta.delta_counter(
-	                                     tracer.wf_internal_reporter.registry,
-	                                     "spans.discarded"))
+                                 else delta.delta_counter(
+                                     tracer.wf_internal_reporter.registry,
+                                     "spans.discarded"))
 
     @property
     def context(self):
