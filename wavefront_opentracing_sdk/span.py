@@ -59,9 +59,10 @@ class WavefrontSpan(opentracing.Span):
                 self.set_tag(tag[0], tag[1])
         if opentracing.ext.tags.COMPONENT not in dict(self.tags):
             self.set_tag(opentracing.ext.tags.COMPONENT, "none")
-        self._spans_discarded = None if tracer.wf_internal_reporter is None \
-            else delta.delta_counter(tracer.wf_internal_reporter.registry,
-            "spans.discarded")
+        self._spans_discarded = (None if tracer.wf_internal_reporter is None
+	                                 else delta.delta_counter(
+	                                     tracer.wf_internal_reporter.registry,
+	                                     "spans.discarded"))
 
     @property
     def context(self):
