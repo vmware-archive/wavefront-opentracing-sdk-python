@@ -95,7 +95,7 @@ class WavefrontSpanReporter(reporter.Reporter):
         try:
             if self.span_received:
                 self.span_received.inc()
-            self._span_buffer.put(wavefront_span)
+            self._span_buffer.put(wavefront_span, block=False)
         except (AttributeError, TypeError, Full):
             if self.spans_dropped:
                 self.spans_dropped.inc()
