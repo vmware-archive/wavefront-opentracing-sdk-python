@@ -36,6 +36,6 @@ class RateSampler(sampler.Sampler):
         """Set the sampling rate for this sampler."""
         if not self.MIN_SAMPLING_RATE < sampling_rate < self.MAX_SAMPLING_RATE:
             raise ValueError('Sampling rate must be between '
-                             '{0.MIN_SAMPLING_RATE} and '
-                             '{0.MAX_SAMPLING_RATE}'.format(self))
+                             f'{self.MIN_SAMPLING_RATE} and '
+                             f'{self.MAX_SAMPLING_RATE}')
         self._boundary = sampling_rate * self.MOD_FACTOR

@@ -70,8 +70,7 @@ class JaegerWavefrontPropagator(propagator.Propagator):
             parent_id = 'null'
         if not sampling_decision:
             sampling_decision = False
-        return '{}:{}:{}:{}'.format(str(trace_id), str(span_id), parent_id,
-                                    '1' if sampling_decision else '0')
+        return f'{str(trace_id)}:{str(span_id)}:{parent_id}:{"1" if sampling_decision else "0"}'
 
     @staticmethod
     def convert_to_uuid(hex_id):

@@ -341,9 +341,8 @@ class WavefrontTracer(opentracing.Tracer):
         # Add operation tag after sending RED heartbeat.
         point_tags.update({self.OPERATION_NAME_TAG: span.get_operation_name()})
         application_service_prefix = (
-            'tracing.derived.{}.{}.'.format(
-                span_tags.get(constants.APPLICATION_TAG_KEY)[0],
-                span_tags.get(constants.SERVICE_TAG_KEY)[0]))
+            f'tracing.derived.{span_tags.get(constants.APPLICATION_TAG_KEY)[0]}' \
+            f'.{span_tags.get(constants.SERVICE_TAG_KEY)[0]}.')
 
         if span.is_error():
             delta.delta_counter(self.wf_derived_reporter.registry,
