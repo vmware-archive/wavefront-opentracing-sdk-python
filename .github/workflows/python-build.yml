@@ -1,4 +1,4 @@
-name: Python package
+name: Run Linters and Unit Tests.
 
 on:
   push:
@@ -8,13 +8,11 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9"]
-
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
     steps:
     - uses: actions/checkout@v3
       with:
@@ -23,19 +21,22 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install freezegun mock opentracing wavefront-sdk-python
-        python -m pip install wavefront-pyformance flake8 flake8-colors
-        python -m pip install flake8-import-order pep8-naming pydocstyle pylint
+        python -m pip install -U pip setuptools wheel
+        python -m pip install -U freezegun mock opentracing
+        python -m pip install -U wavefront-sdk-python wavefront-pyformance
+        python -m pip install -U flake8 flake8-colors
+        python -m pip install -U flake8-import-order pep8-naming
+        python -m pip install -U pydocstyle pylint
     - name: Flake8
       run: python -m flake8
-    - name: Pylint
+    - name: PyLint
       run: python -m pylint wavefront_opentracing_sdk
-    - name: Pydocstyle
+    - name: PyDocStyle
       run: python -m pydocstyle 
     - name: Test 
       run: python -m unittest discover
-    - name: Validate Version was updated
+    - name: Validate Version Was Updated in setup.py
+      if: ${{ github.event_name == 'pull_request' }}
       run: test -n "$(git diff -G version= origin/master HEAD -- setup.py)"
