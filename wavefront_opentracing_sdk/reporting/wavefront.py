@@ -51,7 +51,7 @@ class WavefrontSpanReporter(reporter.Reporter):
         super().__init__(source)
         self.sending_thread = threading.Thread(target=self.run,
                                                name="wavefront_span_reporter")
-        self.sending_thread.setDaemon(True)
+        self.sending_thread.daemon = True
         self.sending_thread.start()
 
     def run(self):

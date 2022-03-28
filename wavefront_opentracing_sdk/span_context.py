@@ -104,5 +104,5 @@ class WavefrontSpanContext(opentracing.SpanContext):
         :return: span context to string
         :rtype: str
         """
-        return ('WavefrontSpanContext{{traceId={0.trace_id}, '
-                'spanId={0.span_id}}}'.format(self))
+        return (f'WavefrontSpanContext{{traceId={self.trace_id}, '
+                f'spanId={self.span_id}}}')
