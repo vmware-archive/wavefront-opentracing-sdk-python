@@ -16,7 +16,7 @@ with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 setuptools.setup(
     name='wavefront-opentracing-sdk-python',
-    version='2.3.2',
+    version='2.3.3',
     author='Tanzu Observability by Wavefront',
     author_email='chitimba@wavefront.com',
     url='https://github.com/wavefrontHQ/wavefront-opentracing-sdk-python',
@@ -34,7 +34,6 @@ setuptools.setup(
         ],
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
