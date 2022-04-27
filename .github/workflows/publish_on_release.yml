@@ -10,11 +10,11 @@ on:
         type: string
 
 jobs:
-  runs-on: ubuntu-latest
   setenv:
     uses: ./.github/workflows/env.yml
   deploy:
     needs: setenv
+    runs-on: ubuntu-latest
     steps:
     - uses: ./.github/actions/test_n_lint
       with:

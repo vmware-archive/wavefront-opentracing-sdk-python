@@ -17,14 +17,14 @@ jobs:
   setenv:
     uses: ./.github/workflows/env.yml
   build:
+    needs: setenv
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
     steps:
-    - needs: setenv
-      uses: ./.github/actions/test_n_lint
+    - uses: ./.github/actions/test_n_lint
       with:
         python_version: ${{ matrix.python-version }}
         input_pkg_name: ${{ needs.setenv.outputs.package_name }}
