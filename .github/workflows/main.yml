@@ -10,12 +10,16 @@ on:
   workflow_call:
     inputs:
       env_yml:
-        default: ./.github/workflows/env.yml@e5c2e9b5e5a9b0c24a0321ef9f675c0038c53291
+        default: ./.github/workflows/env.yml
         type: string
 
 jobs:
   setenv:
-    uses: ${{ inputs.env_yml || "./.github/workflows/env.yml@e5c2e9b5e5a9b0c24a0321ef9f675c0038c53291" }}
+    if: ${{ inputs.env_yml }}
+    uses: ${{ inputs.env_yml }}
+  setenv:
+    if: ${{ !inputs.env_yml }}
+    uses: ./.github/workflows/env.yml 
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -23,7 +27,7 @@ jobs:
       matrix:
         python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
     steps:
-    - uses: ./.github/actions/lint_n_test.yml@e5c2e9b5e5a9b0c24a0321ef9f675c0038c53291
+    - uses: ./.github/actions/lint_n_test.yml
       with:
         python_version: ${{ matrix.python-version }}
         input_pkg_name: ${{ wfenv.outputs.package_name }}
