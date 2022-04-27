@@ -17,7 +17,7 @@ jobs:
     needs: setenv
     runs-on: ubuntu-latest
     steps:
-    - uses: ./.github/actions/test_n_lint
+    - uses: ./.github/actions/lint_n_test
       with:
         package_name: ${{ needs.setenv.outputs.package_name }}
         requirements: '${{ needs.setenv.outputs.requirements }} build'

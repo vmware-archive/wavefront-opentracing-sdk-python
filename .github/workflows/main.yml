@@ -24,7 +24,7 @@ jobs:
       matrix:
         python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
     steps:
-    - uses: ./.github/actions/test_n_lint
+    - uses: ./.github/actions/lint_n_test
       with:
         python_version: ${{ matrix.python-version }}
         input_pkg_name: ${{ needs.setenv.outputs.package_name }}
