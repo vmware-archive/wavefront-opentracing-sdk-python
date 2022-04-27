@@ -23,9 +23,8 @@ jobs:
       matrix:
         python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
     needs: setenv
-    steps:
-    - uses: ./.github/workflows/test_n_lint.yml
-      with:
-        python_version: ${{ matrix.python-version }}
-        input_pkg_name: ${{ needs.setenv.outputs.package_name }}
-        extra_packages: ${{ needs.setenv.outputs.requirements }}
+    uses: ./.github/workflows/test_n_lint.yml
+    with:
+      python_version: ${{ matrix.python-version }}
+      input_pkg_name: ${{ needs.setenv.outputs.package_name }}
+      extra_packages: ${{ needs.setenv.outputs.requirements }}

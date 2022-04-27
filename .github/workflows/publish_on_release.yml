@@ -10,18 +10,21 @@ on:
         type: string
 
 jobs:
+  runs-on: ubuntu-latest
   setenv:
     uses: ./.github/workflows/env.yml
   deploy:
-    runs-on: ubuntu-latest
     needs: setenv
+    uses: ./.github/workflows/test_n_lint.yml
+    with:
+      package_name: ${{ needs.setenv.outputs.package_name }}
+      requirements: '${{ needs.setenv.outputs.requirements }} build'
+  build:
     steps:
-      uses: ./.github/workflows/test_n_lint.yml
-      with:
-        package_name: ${{ needs.setenv.outputs.package_name }}
-        requirements: '${{ needs.setenv.outputs.requirements }} build'
     - name: Build Package
       run: python -m build
+  publish:
+    steps:
     - name: Publish Package on PyPI
       if: startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@master
