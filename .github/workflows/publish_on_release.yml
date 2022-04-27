@@ -2,6 +2,7 @@ name: Publish the Package onto PyPI
 
 on:
   release:
+    types:
     - published
   workflow_call:
     inputs:
