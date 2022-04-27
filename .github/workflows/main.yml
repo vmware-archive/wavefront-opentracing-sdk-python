@@ -18,15 +18,16 @@ jobs:
     uses: ./.github/workflows/env.yml
   build:
     needs: setenv
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python_version: ['3.7', '3.8', '3.9', '3.10']
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
     - uses: ./.github/actions/lint_n_test
       with:
-        python_version: ${{ matrix.python-version }}
+        python_version: ${{ matrix.python_version }}
         input_pkg_name: ${{ needs.setenv.outputs.package_name }}
         extra_packages: ${{ needs.setenv.outputs.requirements }}
