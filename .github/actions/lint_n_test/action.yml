@@ -1,4 +1,4 @@
-name: Run Linters and Unit Tests.
+name: Lint & Test
 
 inputs:
   python_version:

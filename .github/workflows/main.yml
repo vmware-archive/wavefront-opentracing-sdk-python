@@ -1,9 +1,10 @@
-name: Run Linters and Tests for All Supported Python Versions
+name: Linters & Tests
 
 on:
   pull_request:
-    branches:
-      - master
+    types:
+      - opened
+      - reopened
   push:
     branches-ignore:
       - master
