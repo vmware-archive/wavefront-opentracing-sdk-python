@@ -17,7 +17,7 @@ on:
 jobs:
   setenv:
     uses: ./.github/workflows/env.yml
-  build:
+  execute:
     needs: setenv
     strategy:
       fail-fast: false
