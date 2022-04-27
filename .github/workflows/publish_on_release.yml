@@ -13,7 +13,8 @@ on:
 jobs:
   setenv:
     uses: ./.github/workflows/env.yml
-  prepare:
+  execute:
+    name: Prepare and Publish Package
     needs: setenv
     runs-on: ubuntu-latest
     steps:
@@ -23,15 +24,9 @@ jobs:
     - uses: ./.github/actions/lint_n_test
       with:
         package_name: ${{ needs.setenv.outputs.package_name }}
-        requirements: '${{ needs.setenv.outputs.requirements }} build'
-  build:
-    needs: prepare
-    steps:
+        requirements: ${{ format('{0} build', needs.setenv.outputs.requirements) }}'
     - name: Build Package
       run: python -m build
-  publish:
-    needs: build
-    steps:
     - name: Publish Package on PyPI
       if: startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@master
