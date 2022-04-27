@@ -13,7 +13,8 @@ on:
 jobs:
   setenv:
     uses: ./.github/workflows/env.yml
-  prepare:
+  execute:
+    name: Prepare and Publish Package
     needs: setenv
     runs-on: ubuntu-latest
     steps:
@@ -26,9 +27,6 @@ jobs:
         extra_packages: ${{ format('{0} build', needs.setenv.outputs.requirements) }}'
     - name: Build Package
       run: python -m build
-  publish:
-    needs: build
-    steps:
     - name: Publish Package on PyPI
       if: startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@master

@@ -16,6 +16,7 @@ jobs:
   setenv:
     uses: ./.github/workflows/env.yml
   execute:
+    name: Analyse Code and Run Tests
     needs: setenv
     strategy:
       fail-fast: false
