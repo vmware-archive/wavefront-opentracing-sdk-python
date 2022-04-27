@@ -22,11 +22,8 @@ jobs:
         fetch-depth: 0
     - uses: ./.github/actions/lint_n_test
       with:
-        package_name: ${{ needs.setenv.outputs.package_name }}
-        requirements: '${{ needs.setenv.outputs.requirements }} build'
-  build:
-    needs: prepare
-    steps:
+        input_pkg_name: ${{ needs.setenv.outputs.package_name }}
+        extra_packages: ${{ format('{0} build', needs.setenv.outputs.requirements) }}'
     - name: Build Package
       run: python -m build
   publish:
