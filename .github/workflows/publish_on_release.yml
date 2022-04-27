@@ -1,0 +1,28 @@
+name: Publish the Package onto PyPI
+
+on:
+  release:
+    - published
+  workflow_call:
+    inputs:
+      env_yml:
+        default: ./.github/workflows/env.yml
+        type: string
+
+jobs:
+  setenv:
+    uses: ${{ inputs.env_yml }}
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      uses: ./.github/workflows/lint_n_test.yml
+      with:
+        package_name: ${{ setenv.outputs.package_name }}
+        requirements: '${{ setenv.outputs.requirements }} build'
+    - name: Build Package
+      run: python -m build
+    - name: Publish Package on PyPI
+      if: startsWith(github.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}

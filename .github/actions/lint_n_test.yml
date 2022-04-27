@@ -1,0 +1,44 @@
+name: Run Linters and Unit Tests.
+
+on:
+  workflow_call:
+    inputs:
+      python_version:
+        default: '3.10'
+        type: string
+      input_pkg_name:
+        required: true
+        type: string
+      extra_packages:
+        type: string
+
+jobs:
+  build:
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Set up Python ${{ inputs.python_version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ inputs.python_version }}
+    - name: Install Latest pip and setuptools
+      run: python -m pip install -U pip setuptools wheel
+    - name: Install Linters
+      run: |
+        python -m pip install -U flake8 flake8-colors
+        python -m pip install -U flake8-import-order pep8-naming
+        python -m pip install -U pydocstyle pylint
+    - name: Install Extra Dependencies
+      run: python -m pip install -U ${{ inputs.extra_packages }}
+    - name: Run Flake8 Checks
+      run: python -m flake8
+    - name: Run PyLint Checks
+      run: python -m pylint ${{ inputs.input_pkg_name }}
+    - name: PyDocStyle
+      run: python -m pydocstyle 
+    - name: Execute Unit Tests 
+      run: python -m unittest discover
+    - name: Validate Version Was Updated in setup.py
+      if: ${{ github.event_name == 'pull_request' }}
+      run: test -n "$(git diff -G version= origin/master HEAD -- setup.py)"

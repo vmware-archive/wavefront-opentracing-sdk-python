@@ -1,0 +1,27 @@
+name: Run Linters and Tests for All Supported Python Versions
+
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_call:
+    inputs:
+      env_yml:
+        default: ./.github/workflows/env.yml
+        type: string
+
+jobs:
+  setenv:
+    uses: ${{ inputs.env_yml }}
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
+    steps:
+    - uses: ./.github/actions/lint_n_test.yml
+      with:
+        python_version: ${{ matrix.python-version }}
+        input_pkg_name: ${{ wfenv.outputs.package_name }}
+        extra_packages: ${{ wfenv.outputs.requirements }}
