@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     - uses: ./.github/actions/lint_n_test
       with:
         package_name: ${{ needs.setenv.outputs.package_name }}
