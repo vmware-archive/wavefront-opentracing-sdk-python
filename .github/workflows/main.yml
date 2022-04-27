@@ -15,7 +15,7 @@ on:
 
 jobs:
   setenv:
-    uses: ${{ inputs.env_yml }}
+    uses: ${{ inputs.env_yml || ./.github/workflows/env.yml@e5c2e9b5e5a9b0c24a0321ef9f675c0038c53291 }}
   build:
     runs-on: ubuntu-latest
     strategy:
