@@ -22,9 +22,10 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
+    needs: setenv
     steps:
     - uses: ./.github/actions/lint_n_test.yml
       with:
         python_version: ${{ matrix.python-version }}
-        input_pkg_name: ${{ setenv.outputs.package_name }}
-        extra_packages: ${{ setenv.outputs.requirements }}
+        input_pkg_name: ${{ needs.setenv.outputs.package_name }}
+        extra_packages: ${{ needs.setenv.outputs.requirements }}
