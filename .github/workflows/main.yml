@@ -26,5 +26,5 @@ jobs:
     - uses: ./.github/actions/lint_n_test.yml
       with:
         python_version: ${{ matrix.python-version }}
-        input_pkg_name: ${{ wfenv.outputs.package_name }}
-        extra_packages: ${{ wfenv.outputs.requirements }}
+        input_pkg_name: ${{ setenv.outputs.package_name }}
+        extra_packages: ${{ setenv.outputs.requirements }}
