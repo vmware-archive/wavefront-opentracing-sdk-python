@@ -1,5 +1,8 @@
 name: Run Linters and Tests for All Supported Python Versions
 
+env:
+  DEFAULT_ENV_YML: ./.github/workflows/env.yml
+
 on:
   pull_request:
     branches:
@@ -10,14 +13,16 @@ on:
   workflow_call:
     inputs:
       env_yml:
-        default: ./.github/workflows/env.yml
+        default: $DEFAULT_ENV_YML
         type: string
 
 jobs:
   setenv:
     steps:
-    - run: echo "ENV>>> ${{ inputs.env_yml }}"
     - uses: ${{ inputs.env_yml }}
+      if: ${{ inputs.env_yml }}
+    - uses: $DEFAULT_ENV_YML
+      if: ${{ !inputs.env_yml }}
   build:
     runs-on: ubuntu-latest
     strategy:
