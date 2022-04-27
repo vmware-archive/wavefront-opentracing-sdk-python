@@ -6,7 +6,7 @@ on:
   workflow_call:
     inputs:
       env_yml:
-        default: ./.github/workflows/env.yml
+        default: ./.github/workflows/env.yml@e5c2e9b5e5a9b0c24a0321ef9f675c0038c53291
         type: string
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      uses: ./.github/workflows/lint_n_test.yml
+      uses: ./.github/workflows/lint_n_test.yml@e5c2e9b5e5a9b0c24a0321ef9f675c0038c53291
       with:
         package_name: ${{ setenv.outputs.package_name }}
         requirements: '${{ setenv.outputs.requirements }} build'
