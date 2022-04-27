@@ -15,11 +15,9 @@ on:
 
 jobs:
   setenv:
-    if: ${{ inputs.env_yml }}
-    uses: ${{ inputs.env_yml }}
-  setenv:
-    if: ${{ !inputs.env_yml }}
-    uses: ./.github/workflows/env.yml 
+    steps:
+    - run: echo "ENV>>> ${{ inputs.env_yml }}"
+    - uses: ${{ inputs.env_yml }}
   build:
     runs-on: ubuntu-latest
     strategy:
