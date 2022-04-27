@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: setenv
     steps:
-    uses: ./.github/workflows/test_n_lint.yml
-    with:
-      package_name: ${{ needs.setenv.outputs.package_name }}
-      requirements: '${{ needs.setenv.outputs.requirements }} build'
+    - uses: ./.github/actions/test_n_lint
+      with:
+        package_name: ${{ needs.setenv.outputs.package_name }}
+        requirements: '${{ needs.setenv.outputs.requirements }} build'
   build:
     steps:
     - name: Build Package

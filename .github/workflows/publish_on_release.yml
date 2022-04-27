@@ -15,10 +15,11 @@ jobs:
     uses: ./.github/workflows/env.yml
   deploy:
     needs: setenv
-    uses: ./.github/workflows/test_n_lint.yml
-    with:
-      package_name: ${{ needs.setenv.outputs.package_name }}
-      requirements: '${{ needs.setenv.outputs.requirements }} build'
+    steps:
+    - uses: ./.github/actions/test_n_lint
+      with:
+        package_name: ${{ needs.setenv.outputs.package_name }}
+        requirements: '${{ needs.setenv.outputs.requirements }} build'
   build:
     steps:
     - name: Build Package

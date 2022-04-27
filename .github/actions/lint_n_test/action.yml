@@ -1,20 +1,18 @@
 name: Run Linters and Unit Tests.
 
-on:
-  workflow_call:
-    inputs:
-      python_version:
-        default: '3.10'
-        type: string
-      input_pkg_name:
-        required: true
-        type: string
-      extra_packages:
-        type: string
+inputs:
+  python_version:
+    default: '3.10'
+    type: string
+  input_pkg_name:
+    required: true
+    type: string
+  extra_packages:
+    type: string
 
-jobs:
-  build:
-    steps:
+runs:
+  using: composite
+  steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
