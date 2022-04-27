@@ -1,6 +1,7 @@
 # wavefront-opentracing-sdk-python
 
-[![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-python.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-opentracing-sdk-python)
+
+![example workflow](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-python/actions/workflows/main.yml/badge.svg)
 [![OpenTracing Badge](https://img.shields.io/badge/OpenTracing-enabled-blue.svg)](http://opentracing.io)
 [![image](https://img.shields.io/pypi/v/wavefront-opentracing-sdk-python.svg)](https://pypi.org/project/wavefront-opentracing-sdk-python/)
 [![image](https://img.shields.io/pypi/l/wavefront-opentracing-sdk-python.svg)](https://pypi.org/project/wavefront-opentracing-sdk-python/)
