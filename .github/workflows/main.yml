@@ -22,8 +22,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.7', '3.8', '3.9', '3.10']
     steps:
+    - uses: actions/checkout@v3
     - uses: ./.github/actions/lint_n_test
       with:
         python_version: ${{ matrix.python-version }}
