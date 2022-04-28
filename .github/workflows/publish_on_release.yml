@@ -24,7 +24,7 @@ jobs:
     - uses: ./.github/actions/lint_n_test
       with:
         input_pkg_name: ${{ needs.setenv.outputs.package_name }}
-        extra_packages: ${{ format('{0} build', needs.setenv.outputs.requirements) }}'
+        extra_packages: ${{ format('{0} build', needs.setenv.outputs.requirements) }}
     - name: Build Package
       run: python -m build
     - name: Publish Package on PyPI
