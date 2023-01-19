@@ -1,5 +1,8 @@
 # wavefront-opentracing-sdk-python
 
+# We are deprecating the repos for OpenTracing and no longer supporting this. Customers can refer to these migration steps to move to OpenTelemetry, 
+# (https://docs.wavefront.com/opentracing_to_opentelemetry_migration.html). Please contact the support team in you have anyquestions 
+# (support@wavefront.com). Thank you.
 
 ![example workflow](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-python/actions/workflows/main.yml/badge.svg)
 [![OpenTracing Badge](https://img.shields.io/badge/OpenTracing-enabled-blue.svg)](http://opentracing.io)
